@@ -1,26 +1,56 @@
 import streamlit as st
-import os
-import smtplib
-from email.mime.text import MIMEText
-import random
-from dotenv import load_dotenv
+import requests
+from bs4 import BeautifulSoup
+import pandas as pd
 from year_module import (
     def_year_choose,
     def_list_all_subject,
     def_check_in_scopus_sjr_wos,
     def_rank_by_rank_key,
-    def_rank_by_Q_key
+    def_rank_by_Q_key,
+    check_rank_by_h_q,
+    check_rank_by_name_1_journal
 )
-from year_module import check_rank_by_h_q  # Đảm bảo check_rank_by_h_q nằm trong year_module.py
-import requests
-from bs4 import BeautifulSoup
-import pandas as pd
+
+def def_rank_by_name_or_issn(year):
+    st.subheader(f"Hạng theo TÊN hoặc ISSN (Năm {year})")
+    name_or_issn = st.text_input("Nhập TÊN tạp chí hoặc ISSN", key="rank_name_issn")
+    if st.button("Tra cứu", key="search_name_issn"):
+        if name_or_issn.strip():
+            st.write(f"Đang tra cứu bằng hàm chuẩn cho: {name_or_issn} (Năm {year})")
+            subject_area_category = ""
+            results = check_rank_by_name_1_journal(
+                search_name_journal=name_or_issn,
+                subject_area_category=subject_area_category,
+                year_check=year
+            )
+            df = pd.DataFrame(results, columns=['STT','Tên tạp chí','Rank','Q','H-index','Position','Total','Percent','Top','Category','ID_Category','Page','Note'])
+            if not df.empty:
+                st.dataframe(df, use_container_width=True)
+                selected = st.number_input("Chọn STT để xem chi tiết:", min_value=1, max_value=len(df), step=1)
+                if st.button("Xem Hạng Chi Tiết"):
+                    row = df[df['STT'] == selected].iloc[0]
+                    st.success(f"Kết quả: Rank: {row['Rank']}, Q: {row['Q']}, Percent: {row['Percent']}, Top: {row['Top']}, Note: {row['Note']}")
+            else:
+                st.warning("Không tìm thấy tạp chí phù hợp.")
+        else:
+            st.warning("Vui lòng nhập từ khóa.")
 
 st.set_page_config(layout="wide")
-load_dotenv()
 
-sender_email = os.getenv('EMAIL')
-sender_pass = os.getenv('EMAIL_PASS')
+st.title("Đăng nhập qua Email")
+if 'authenticated' not in st.session_state:
+    st.session_state['authenticated'] = False
+if 'otp_sent' not in st.session_state:
+    st.session_state['otp_sent'] = ''
+if 'year' not in st.session_state:
+    st.session_state['year'] = 2025
+
+sender_email = st.secrets["EMAIL"] if "EMAIL" in st.secrets else ""
+sender_pass = st.secrets["EMAIL_PASS"] if "EMAIL_PASS" in st.secrets else ""
+
+import smtplib
+from email.mime.text import MIMEText
 
 def send_email(receiver_email, password):
     msg = MIMEText(f"Mã OTP đăng nhập của bạn: {password}")
@@ -31,85 +61,23 @@ def send_email(receiver_email, password):
         server.login(sender_email, sender_pass)
         server.send_message(msg)
 
-def def_rank_by_name_or_issn(year):
-    st.subheader(f"Hạng theo TÊN hoặc ISSN (Năm {year})")
-    name_or_issn = st.text_input("Nhập TÊN tạp chí hoặc ISSN", key="rank_name_issn")
-    if st.button("Tra cứu", key="search_name_issn"):
-        if name_or_issn.strip():
-            st.write(f"Đang tra cứu thông tin cho: {name_or_issn} (Năm {year})")
-            url = f"https://www.scimagojr.com/journalsearch.php?q={name_or_issn}"
-            response = requests.get(url)
-            soup = BeautifulSoup(response.content, 'html.parser')
-            new_row = []
-            STT = 0
-            for link in soup.find_all('a', href=True):
-                if 'journalsearch.php?q=' in link['href']:
-                    title_journal = link.find('span', class_='jrnlname').text
-                    id_scopus_journal = link['href'].split('q=')[1].split('&')[0]
-                    url_sjr_journal = f"https://www.scimagojr.com/journalsearch.php?q={id_scopus_journal}&tip=sid&clean=0"
-                    detail_response = requests.get(url_sjr_journal)
-                    detail_soup = BeautifulSoup(detail_response.content, 'html.parser')
-                    issn_sjr_homepage = 'N/A'
-                    publisher_sjr_homepage = 'N/A'
-                    percent = 5.0  # Ví dụ giả định
-                    sjr_quartile = 'Q1'
-                    total_journals = 2000
-                    STT += 1
-                    publisher_div = detail_soup.find('h2', string='Publisher')
-                    if publisher_div:
-                        publisher_p = publisher_div.find_next('p')
-                        if publisher_p:
-                            publisher_sjr_homepage = publisher_p.text.strip()
-                    issn_div = detail_soup.find('h2', string='ISSN')
-                    if issn_div:
-                        issn_p = issn_div.find_next('p')
-                        if issn_p:
-                            issn_sjr_homepage = issn_p.text.strip()
-                    new_row.append([STT, title_journal, issn_sjr_homepage, publisher_sjr_homepage, id_scopus_journal, percent, sjr_quartile, total_journals])
-            df = pd.DataFrame(new_row, columns=['STT','Tên tạp chí', 'ISSN', 'Nhà xuất bản', 'ID Scopus', 'Percent', 'Quartile', 'Total Journals'])
-            if not df.empty:
-                st.dataframe(df, use_container_width=True)
-                selected_stt = st.number_input("Chọn STT tạp chí để tra hạng:", min_value=1, max_value=STT, step=1)
-                if st.button("Xem Hạng Chi Tiết"):
-                    selected_row = df[df['STT'] == selected_stt]
-                    if not selected_row.empty:
-                        percent = selected_row['Percent'].values[0]
-                        sjr_quartile = selected_row['Quartile'].values[0]
-                        total_journals = selected_row['Total Journals'].values[0]
-                        rank, top_percent, note = check_rank_by_h_q(total_journals, percent, sjr_quartile)
-                        st.success(f"Kết quả Hạng: {rank} | Top: {top_percent} | Ghi chú: {note}")
-                    else:
-                        st.warning("Không tìm thấy STT đã chọn.")
-            else:
-                st.warning("Không tìm thấy tạp chí phù hợp.")
-        else:
-            st.warning("Vui lòng nhập TÊN hoặc ISSN để tra cứu.")
-
-st.title("Đăng nhập qua Email")
-if 'authenticated' not in st.session_state:
-    st.session_state['authenticated'] = False
-if 'otp_sent' not in st.session_state:
-    st.session_state['otp_sent'] = ''
-if 'year' not in st.session_state:
-    st.session_state['year'] = 2025
-
 if not st.session_state['authenticated']:
     user_email = st.text_input("Nhập email của bạn")
     if st.button("Gửi mã OTP"):
         if "@" in user_email:
-            otp = str(random.randint(100000, 999999))
+            otp = str(123456)  # Thay bằng random hoặc gửi thật
             st.session_state['otp_sent'] = otp
             send_email(user_email, otp)
-            st.success("Mã OTP đã được gửi đến email của bạn.")
+            st.success("Mã OTP đã được gửi.")
         else:
             st.warning("Email không hợp lệ")
     otp_input = st.text_input("Nhập mã OTP", type="password")
     if st.button("Đăng nhập"):
-        if otp_input == st.session_state['otp_sent'] and otp_input != '':
+        if otp_input == st.session_state['otp_sent']:
             st.session_state['authenticated'] = True
             st.success("Đăng nhập thành công!")
         else:
-            st.error("Mã OTP không đúng hoặc chưa gửi mã!")
+            st.error("Mã OTP không đúng.")
     st.stop()
 
 if st.session_state['authenticated']:
@@ -122,21 +90,15 @@ if st.session_state['authenticated']:
         "Từ khóa và Hạng",
         "Từ khóa và Q"
     ])
-
     with tabs[0]:
         st.session_state['year'] = def_year_choose(st.session_state['year'])
-
     with tabs[1]:
         def_rank_by_name_or_issn(st.session_state['year'])
-
     with tabs[2]:
         def_list_all_subject(st.session_state['year'])
-
     with tabs[3]:
         def_check_in_scopus_sjr_wos(st.session_state['year'])
-
     with tabs[4]:
         def_rank_by_rank_key(st.session_state['year'])
-
     with tabs[5]:
         def_rank_by_Q_key(st.session_state['year'])
