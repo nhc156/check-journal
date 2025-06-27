@@ -4,7 +4,7 @@ import smtplib
 from email.mime.text import MIMEText
 import random
 from dotenv import load_dotenv
-from app_functions import (
+from year_module import (
     def_year_choose,
     def_rank_by_name_or_issn,
     def_list_all_subject,
@@ -28,7 +28,6 @@ def send_email(receiver_email, password):
         server.login(sender_email, sender_pass)
         server.send_message(msg)
 
-# === App ===
 st.title("Đăng nhập qua Email")
 if 'authenticated' not in st.session_state:
     st.session_state['authenticated'] = False
@@ -56,7 +55,6 @@ if not st.session_state['authenticated']:
             st.error("Mã OTP không đúng hoặc chưa gửi mã!")
     st.stop()
 
-# === Tabs ===
 if st.session_state['authenticated']:
     st.header("📚 Tra cứu thông tin tạp chí")
     tabs = st.tabs([
