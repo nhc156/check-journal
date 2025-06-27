@@ -104,7 +104,7 @@ if 'otp_sent' not in st.session_state:
 if not st.session_state['authenticated']:
     user_email = st.text_input("Nhập email của bạn")
     if st.button("Gửi mã OTP"):
-        if "@" in user_email:
+        if "@tdtu.edu.vn" in user_email:
             otp = str(random.randint(100000, 999999))
             st.session_state['otp_sent'] = otp
             send_email(user_email, otp)
