@@ -9,9 +9,9 @@ from year_module import (
     def_list_all_subject,
     def_check_in_scopus_sjr_wos,
     def_rank_by_rank_key,
-    def_rank_by_Q_key,
-    check_rank_by_h_q
+    def_rank_by_Q_key
 )
+from year_module import check_rank_by_h_q  # Đảm bảo check_rank_by_h_q nằm trong year_module.py
 import requests
 from bs4 import BeautifulSoup
 import pandas as pd
@@ -51,7 +51,7 @@ def def_rank_by_name_or_issn(year):
                     detail_soup = BeautifulSoup(detail_response.content, 'html.parser')
                     issn_sjr_homepage = 'N/A'
                     publisher_sjr_homepage = 'N/A'
-                    percent = 5.0  # Ví dụ cứng, thực tế cần tính
+                    percent = 5.0  # Ví dụ giả định
                     sjr_quartile = 'Q1'
                     total_journals = 2000
                     STT += 1
