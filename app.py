@@ -6,11 +6,11 @@ import smtplib
 from email.mime.text import MIMEText
 import random
 
-# Gửi OTP random
+# Gửi OTP random, thêm fallback nếu chưa có secrets
 
 def send_email(receiver_email, otp):
-    sender_email = st.secrets["EMAIL"]
-    sender_pass = st.secrets["EMAIL_PASS"]
+    sender_email = st.secrets.get("EMAIL", "your_email@gmail.com")
+    sender_pass = st.secrets.get("EMAIL_PASS", "your_app_password")
     msg = MIMEText(f"Mã OTP của bạn: {otp}")
     msg['Subject'] = "OTP đăng nhập"
     msg['From'] = sender_email
