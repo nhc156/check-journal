@@ -4,7 +4,7 @@ import smtplib
 from email.mime.text import MIMEText
 import random
 from dotenv import load_dotenv
-from App_check_journal_and_support_25_6_5 import (
+from app_functions import (
     def_year_choose,
     def_rank_by_name_or_issn,
     def_list_all_subject,
