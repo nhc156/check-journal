@@ -2,6 +2,8 @@ import streamlit as st
 import requests
 from bs4 import BeautifulSoup
 import pandas as pd
+import sys
+sys.path.append('.')  # Đảm bảo Python tìm được module trong thư mục hiện tại
 from year_module import (
     def_year_choose,
     def_list_all_subject,
