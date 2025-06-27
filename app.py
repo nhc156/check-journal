@@ -5,13 +5,19 @@ import pandas as pd
 import smtplib
 from email.mime.text import MIMEText
 import random
+import os
+from dotenv import load_dotenv
 
-# Gửi OTP dùng secrets chuẩn, random OTP như bản gốc ban đầu
+# Tải biến môi trường
+load_dotenv()
+sender_email = os.getenv('EMAIL')
+sender_pass = os.getenv('EMAIL_PASS')
+
+# Hàm gửi OTP
+
 def send_email(receiver_email, otp):
-    sender_email = st.secrets["EMAIL"]
-    sender_pass = st.secrets["EMAIL_PASS"]
-    msg = MIMEText(f"Mã OTP của bạn: {otp}")
-    msg['Subject'] = "OTP đăng nhập"
+    msg = MIMEText(f"Mã OTP đăng nhập của bạn: {otp}")
+    msg['Subject'] = "Mã đăng nhập"
     msg['From'] = sender_email
     msg['To'] = receiver_email
     with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
@@ -42,7 +48,7 @@ def def_rank_by_rank_key(year):
 def def_rank_by_Q_key(year):
     st.write(f"Từ khóa & Q - {year}")
 
-# Giao diện giữ nguyên chuẩn ban đầu
+# Giao diện chuẩn
 st.set_page_config(layout="wide")
 st.title("Đăng nhập OTP TDTU")
 
@@ -57,16 +63,16 @@ if not st.session_state['authenticated']:
             otp = str(random.randint(100000, 999999))
             st.session_state['otp_sent'] = otp
             send_email(user_email, otp)
-            st.success(f"OTP đã gửi tới {user_email}")
+            st.success("Mã OTP đã được gửi đến email của bạn.")
         else:
             st.warning("Bạn chỉ được nhập email @tdtu.edu.vn")
     otp_in = st.text_input("Nhập OTP", type="password")
     if st.button("Đăng nhập"):
         if otp_in == st.session_state['otp_sent']:
             st.session_state['authenticated'] = True
-            st.success("Đăng nhập thành công")
+            st.success("Đăng nhập thành công!")
         else:
-            st.error("OTP sai")
+            st.error("Mã OTP không đúng hoặc chưa gửi mã!")
     st.stop()
 
 if st.session_state['authenticated']:
