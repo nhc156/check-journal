@@ -4,20 +4,23 @@ from bs4 import BeautifulSoup
 import pandas as pd
 import smtplib
 from email.mime.text import MIMEText
+import random
 
-# ======= Hàm gửi OTP chuẩn bản cũ =======
-def send_email(receiver_email, password):
+# Gửi OTP random
+
+def send_email(receiver_email, otp):
     sender_email = st.secrets["EMAIL"]
     sender_pass = st.secrets["EMAIL_PASS"]
-    msg = MIMEText(f"Mã OTP đăng nhập của bạn: {password}")
-    msg['Subject'] = "Mã OTP"
+    msg = MIMEText(f"Mã OTP của bạn: {otp}")
+    msg['Subject'] = "OTP đăng nhập"
     msg['From'] = sender_email
     msg['To'] = receiver_email
     with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
         server.login(sender_email, sender_pass)
         server.send_message(msg)
 
-# ======= Hàm chọn năm =======
+# Năm
+
 def def_year_choose(_):
     url = 'https://www.scimagojr.com/journalrank.php'
     soup = BeautifulSoup(requests.get(url).content, 'html.parser')
@@ -25,36 +28,42 @@ def def_year_choose(_):
     year = st.selectbox("Chọn năm", years)
     return year
 
-# ======= Các hàm tra cứu khác (placeholder) =======
+# Stub các hàm còn lại
+
 def def_list_all_subject(year):
-    st.write(f"[Stub] Danh sách chuyên ngành cho năm {year}")
+    st.write(f"Danh sách chuyên ngành - {year}")
 
 def def_rank_by_name_or_issn(year):
-    st.write(f"[Stub] Tra cứu theo tên hoặc ISSN cho năm {year}")
+    st.write(f"Hạng theo TÊN/ISSN - {year}")
 
 def def_check_in_scopus_sjr_wos(year):
-    st.write(f"[Stub] Kiểm tra Scopus/SJR/WoS cho năm {year}")
+    st.write(f"Phân loại - {year}")
 
 def def_rank_by_rank_key(year):
-    st.write(f"[Stub] Từ khóa & Hạng cho năm {year}")
+    st.write(f"Từ khóa & Hạng - {year}")
 
 def def_rank_by_Q_key(year):
-    st.write(f"[Stub] Từ khóa & Q cho năm {year}")
+    st.write(f"Từ khóa & Q - {year}")
 
-# ======= Giao diện =======
+# Giao diện
+
 st.set_page_config(layout="wide")
-st.title("Đăng nhập OTP")
+
+st.title("Đăng nhập OTP TDTU")
 if 'authenticated' not in st.session_state: st.session_state['authenticated'] = False
 if 'otp_sent' not in st.session_state: st.session_state['otp_sent'] = ''
 if 'year' not in st.session_state: st.session_state['year'] = 2025
 
 if not st.session_state['authenticated']:
-    user_email = st.text_input("Nhập email để nhận OTP")
+    user_email = st.text_input("Nhập email @tdtu.edu.vn để nhận OTP")
     if st.button("Gửi OTP"):
-        otp = "123456"
-        st.session_state['otp_sent'] = otp
-        send_email(user_email, otp)
-        st.success(f"OTP đã gửi tới {user_email}")
+        if "@tdtu.edu.vn" in user_email:
+            otp = str(random.randint(100000, 999999))
+            st.session_state['otp_sent'] = otp
+            send_email(user_email, otp)
+            st.success(f"OTP đã gửi tới {user_email}")
+        else:
+            st.warning("Bạn chỉ được nhập email @tdtu.edu.vn")
     otp_in = st.text_input("Nhập OTP", type="password")
     if st.button("Đăng nhập"):
         if otp_in == st.session_state['otp_sent']:
