@@ -9,12 +9,14 @@ from bs4 import BeautifulSoup
 import pandas as pd
 from dotenv import load_dotenv
 
-# Load .env (local) hoặc dùng Streamlit secrets nếu cần
+# Cài đặt full width
+st.set_page_config(layout="wide")
+
+# Load .env
 load_dotenv()
 sender_email = os.getenv('EMAIL')
 sender_pass = os.getenv('EMAIL_PASS')
 
-# Hàm gửi email
 def send_email(receiver_email, password):
     msg = MIMEText(f"Mã OTP đăng nhập của bạn: {password}")
     msg['Subject'] = "Mã đăng nhập"
@@ -24,7 +26,6 @@ def send_email(receiver_email, password):
         server.login(sender_email, sender_pass)
         server.send_message(msg)
 
-# Hàm tra cứu tạp chí
 def find_title_or_issn(name_or_issn):
     url_search_sjr = f"https://www.scimagojr.com/journalsearch.php?q={name_or_issn}"
     response = requests.get(url_search_sjr)
@@ -94,7 +95,6 @@ def issn_to_all(issn):
     email_question_journal = email_tag['href'].replace('mailto:', '') if email_tag else 'N/A'
     return name_journal, country, treecategory_dict, publisher, h_index, issn_info, coverage, homepage_link, how_to_publish_link, email_question_journal
 
-# Giao diện đăng nhập OTP
 st.title("Đăng nhập qua Email")
 if 'authenticated' not in st.session_state:
     st.session_state['authenticated'] = False
@@ -104,7 +104,7 @@ if 'otp_sent' not in st.session_state:
 if not st.session_state['authenticated']:
     user_email = st.text_input("Nhập email của bạn")
     if st.button("Gửi mã OTP"):
-        if "@tdtu.edu.vn" in user_email:
+        if "@" in user_email:
             otp = str(random.randint(100000, 999999))
             st.session_state['otp_sent'] = otp
             send_email(user_email, otp)
@@ -120,7 +120,6 @@ if not st.session_state['authenticated']:
             st.error("Mã OTP không đúng hoặc chưa gửi mã!")
     st.stop()
 
-# Giao diện tra cứu sau đăng nhập
 st.header("📚 Tra cứu thông tin tạp chí")
 query = st.text_input("Nhập TÊN tạp chí hoặc ISSN")
 if st.button("Tìm kiếm"):
@@ -130,7 +129,7 @@ if st.button("Tìm kiếm"):
             st.warning("Không tìm thấy tạp chí phù hợp.")
         else:
             st.success(f"Tìm thấy {len(df_result)} kết quả:")
-            st.dataframe(df_result)
+            st.dataframe(df_result, use_container_width=True)
             selected_index = st.number_input("Nhập số STT để xem chi tiết:", min_value=1, max_value=len(df_result), step=1)
             if st.button("Xem chi tiết"):
                 selected_row = df_result[df_result['STT'] == selected_index]
