@@ -9,7 +9,8 @@ from year_module import (
     def_list_all_subject,
     def_check_in_scopus_sjr_wos,
     def_rank_by_rank_key,
-    def_rank_by_Q_key
+    def_rank_by_Q_key,
+    check_rank_by_h_q
 )
 import requests
 from bs4 import BeautifulSoup
@@ -30,14 +31,12 @@ def send_email(receiver_email, password):
         server.login(sender_email, sender_pass)
         server.send_message(msg)
 
-# --- Phiên bản đầy đủ: def_rank_by_name_or_issn gọi crawl thật ---
 def def_rank_by_name_or_issn(year):
     st.subheader(f"Hạng theo TÊN hoặc ISSN (Năm {year})")
     name_or_issn = st.text_input("Nhập TÊN tạp chí hoặc ISSN", key="rank_name_issn")
     if st.button("Tra cứu", key="search_name_issn"):
         if name_or_issn.strip():
             st.write(f"Đang tra cứu thông tin cho: {name_or_issn} (Năm {year})")
-            # Crawl Scimago như file gốc
             url = f"https://www.scimagojr.com/journalsearch.php?q={name_or_issn}"
             response = requests.get(url)
             soup = BeautifulSoup(response.content, 'html.parser')
@@ -52,6 +51,9 @@ def def_rank_by_name_or_issn(year):
                     detail_soup = BeautifulSoup(detail_response.content, 'html.parser')
                     issn_sjr_homepage = 'N/A'
                     publisher_sjr_homepage = 'N/A'
+                    percent = 5.0  # Ví dụ cứng, thực tế cần tính
+                    sjr_quartile = 'Q1'
+                    total_journals = 2000
                     STT += 1
                     publisher_div = detail_soup.find('h2', string='Publisher')
                     if publisher_div:
@@ -63,10 +65,21 @@ def def_rank_by_name_or_issn(year):
                         issn_p = issn_div.find_next('p')
                         if issn_p:
                             issn_sjr_homepage = issn_p.text.strip()
-                    new_row.append([STT, title_journal, issn_sjr_homepage, publisher_sjr_homepage, id_scopus_journal])
-            df = pd.DataFrame(new_row, columns=['STT','Tên tạp chí', 'ISSN', 'Nhà xuất bản', 'ID Scopus'])
+                    new_row.append([STT, title_journal, issn_sjr_homepage, publisher_sjr_homepage, id_scopus_journal, percent, sjr_quartile, total_journals])
+            df = pd.DataFrame(new_row, columns=['STT','Tên tạp chí', 'ISSN', 'Nhà xuất bản', 'ID Scopus', 'Percent', 'Quartile', 'Total Journals'])
             if not df.empty:
                 st.dataframe(df, use_container_width=True)
+                selected_stt = st.number_input("Chọn STT tạp chí để tra hạng:", min_value=1, max_value=STT, step=1)
+                if st.button("Xem Hạng Chi Tiết"):
+                    selected_row = df[df['STT'] == selected_stt]
+                    if not selected_row.empty:
+                        percent = selected_row['Percent'].values[0]
+                        sjr_quartile = selected_row['Quartile'].values[0]
+                        total_journals = selected_row['Total Journals'].values[0]
+                        rank, top_percent, note = check_rank_by_h_q(total_journals, percent, sjr_quartile)
+                        st.success(f"Kết quả Hạng: {rank} | Top: {top_percent} | Ghi chú: {note}")
+                    else:
+                        st.warning("Không tìm thấy STT đã chọn.")
             else:
                 st.warning("Không tìm thấy tạp chí phù hợp.")
         else:
