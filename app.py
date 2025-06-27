@@ -6,12 +6,13 @@ import random
 from dotenv import load_dotenv
 from year_module import (
     def_year_choose,
-    def_rank_by_name_or_issn,
     def_list_all_subject,
     def_check_in_scopus_sjr_wos,
     def_rank_by_rank_key,
     def_rank_by_Q_key
 )
+import requests
+from bs4 import BeautifulSoup
 
 st.set_page_config(layout="wide")
 load_dotenv()
@@ -27,6 +28,16 @@ def send_email(receiver_email, password):
     with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
         server.login(sender_email, sender_pass)
         server.send_message(msg)
+
+# --- Bổ sung ô nhập trực tiếp trong app.py ---
+def def_rank_by_name_or_issn(year):
+    st.subheader(f"Hạng theo TÊN hoặc ISSN (Năm {year})")
+    name_or_issn = st.text_input("Nhập TÊN tạp chí hoặc ISSN", key="rank_name_issn")
+    if st.button("Tra cứu", key="search_name_issn"):
+        if name_or_issn.strip():
+            st.write(f"Đang tra cứu thông tin cho: {name_or_issn} (Năm {year})")
+        else:
+            st.warning("Vui lòng nhập TÊN hoặc ISSN để tra cứu.")
 
 st.title("Đăng nhập qua Email")
 if 'authenticated' not in st.session_state:
