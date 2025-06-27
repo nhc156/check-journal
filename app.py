@@ -62,9 +62,6 @@ def def_rank_by_Q_key(year):
                 qv = row.find_all('td')[-1].text.strip()
                 st.write(f"🔎 {j} | Q: {qv}")
 
-def check_rank_by_h_q(total, percent, q):
-    return "Hạng", "Top", "Note"  # Thay bằng hàm thật
-
 def check_rank_by_name_1_journal(search_name_journal, subject_area_category, year_check):
     return [[1, search_name_journal, "Rank", "Q1", 100, 1, 2000, 0.5, "Top", "Cat", "ID", 1, "Note"]]
 
@@ -81,6 +78,15 @@ def def_rank_by_name_or_issn(year):
                 r = df[df['STT']==sel].iloc[0]
                 st.success(f"Rank: {r['Rank']}, Q: {r['Q']}, Top: {r['Top']}, Note: {r['Note']}")
 
+def send_email(to, otp):
+    msg = MIMEText(f"Mã OTP: {otp}")
+    msg['Subject'] = "OTP"
+    msg['From'] = sender_email
+    msg['To'] = to
+    with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
+        server.login(sender_email, sender_pass)
+        server.send_message(msg)
+
 st.set_page_config(layout="wide")
 
 st.title("Đăng nhập OTP")
@@ -88,23 +94,21 @@ if 'authenticated' not in st.session_state: st.session_state['authenticated'] = 
 if 'otp_sent' not in st.session_state: st.session_state['otp_sent'] = ''
 if 'year' not in st.session_state: st.session_state['year'] = 2025
 
-sender_email = "test@example.com"
-sender_pass = "testpass"
-
-def send_email(to, otp):
-    pass  # Không thực
+sender_email = st.text_input("Email người gửi", value="youremail@gmail.com")
+sender_pass = st.text_input("Mật khẩu ứng dụng Gmail", type="password")
 
 if not st.session_state['authenticated']:
-    user_email = st.text_input("Email")
+    user_email = st.text_input("Email nhận OTP")
     if st.button("Gửi OTP"):
         otp = "123456"
         st.session_state['otp_sent'] = otp
         send_email(user_email, otp)
-        st.success("OTP đã gửi.")
-    otp_in = st.text_input("OTP", type="password")
+        st.success(f"OTP đã gửi tới {user_email}.")
+    otp_in = st.text_input("Nhập OTP", type="password")
     if st.button("Đăng nhập"):
         if otp_in == st.session_state['otp_sent']:
             st.session_state['authenticated'] = True
+            st.success("Đăng nhập thành công.")
         else:
             st.error("OTP sai.")
     st.stop()
