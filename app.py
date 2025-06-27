@@ -6,11 +6,10 @@ import smtplib
 from email.mime.text import MIMEText
 import random
 
-# Gửi OTP random, thêm fallback nếu chưa có secrets
-
+# ====== Gửi OTP RANDOM (ỔN ĐỊNH NHẤT) ======
 def send_email(receiver_email, otp):
-    sender_email = st.secrets.get("EMAIL", "your_email@gmail.com")
-    sender_pass = st.secrets.get("EMAIL_PASS", "your_app_password")
+    sender_email = st.secrets["EMAIL"]
+    sender_pass = st.secrets["EMAIL_PASS"]
     msg = MIMEText(f"Mã OTP của bạn: {otp}")
     msg['Subject'] = "OTP đăng nhập"
     msg['From'] = sender_email
@@ -19,8 +18,7 @@ def send_email(receiver_email, otp):
         server.login(sender_email, sender_pass)
         server.send_message(msg)
 
-# Năm
-
+# ====== Hàm lấy Năm ======
 def def_year_choose(_):
     url = 'https://www.scimagojr.com/journalrank.php'
     soup = BeautifulSoup(requests.get(url).content, 'html.parser')
@@ -28,8 +26,7 @@ def def_year_choose(_):
     year = st.selectbox("Chọn năm", years)
     return year
 
-# Stub các hàm còn lại
-
+# ====== Các hàm tra cứu stub ======
 def def_list_all_subject(year):
     st.write(f"Danh sách chuyên ngành - {year}")
 
@@ -45,11 +42,10 @@ def def_rank_by_rank_key(year):
 def def_rank_by_Q_key(year):
     st.write(f"Từ khóa & Q - {year}")
 
-# Giao diện
-
+# ====== Giao diện OTP Random Chuẩn ======
 st.set_page_config(layout="wide")
-
 st.title("Đăng nhập OTP TDTU")
+
 if 'authenticated' not in st.session_state: st.session_state['authenticated'] = False
 if 'otp_sent' not in st.session_state: st.session_state['otp_sent'] = ''
 if 'year' not in st.session_state: st.session_state['year'] = 2025
