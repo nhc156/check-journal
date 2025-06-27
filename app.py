@@ -13,6 +13,7 @@ from year_module import (
 )
 import requests
 from bs4 import BeautifulSoup
+import pandas as pd
 
 st.set_page_config(layout="wide")
 load_dotenv()
@@ -29,13 +30,45 @@ def send_email(receiver_email, password):
         server.login(sender_email, sender_pass)
         server.send_message(msg)
 
-# --- Bổ sung ô nhập trực tiếp trong app.py ---
+# --- Phiên bản đầy đủ: def_rank_by_name_or_issn gọi crawl thật ---
 def def_rank_by_name_or_issn(year):
     st.subheader(f"Hạng theo TÊN hoặc ISSN (Năm {year})")
     name_or_issn = st.text_input("Nhập TÊN tạp chí hoặc ISSN", key="rank_name_issn")
     if st.button("Tra cứu", key="search_name_issn"):
         if name_or_issn.strip():
             st.write(f"Đang tra cứu thông tin cho: {name_or_issn} (Năm {year})")
+            # Crawl Scimago như file gốc
+            url = f"https://www.scimagojr.com/journalsearch.php?q={name_or_issn}"
+            response = requests.get(url)
+            soup = BeautifulSoup(response.content, 'html.parser')
+            new_row = []
+            STT = 0
+            for link in soup.find_all('a', href=True):
+                if 'journalsearch.php?q=' in link['href']:
+                    title_journal = link.find('span', class_='jrnlname').text
+                    id_scopus_journal = link['href'].split('q=')[1].split('&')[0]
+                    url_sjr_journal = f"https://www.scimagojr.com/journalsearch.php?q={id_scopus_journal}&tip=sid&clean=0"
+                    detail_response = requests.get(url_sjr_journal)
+                    detail_soup = BeautifulSoup(detail_response.content, 'html.parser')
+                    issn_sjr_homepage = 'N/A'
+                    publisher_sjr_homepage = 'N/A'
+                    STT += 1
+                    publisher_div = detail_soup.find('h2', string='Publisher')
+                    if publisher_div:
+                        publisher_p = publisher_div.find_next('p')
+                        if publisher_p:
+                            publisher_sjr_homepage = publisher_p.text.strip()
+                    issn_div = detail_soup.find('h2', string='ISSN')
+                    if issn_div:
+                        issn_p = issn_div.find_next('p')
+                        if issn_p:
+                            issn_sjr_homepage = issn_p.text.strip()
+                    new_row.append([STT, title_journal, issn_sjr_homepage, publisher_sjr_homepage, id_scopus_journal])
+            df = pd.DataFrame(new_row, columns=['STT','Tên tạp chí', 'ISSN', 'Nhà xuất bản', 'ID Scopus'])
+            if not df.empty:
+                st.dataframe(df, use_container_width=True)
+            else:
+                st.warning("Không tìm thấy tạp chí phù hợp.")
         else:
             st.warning("Vui lòng nhập TÊN hoặc ISSN để tra cứu.")
 
