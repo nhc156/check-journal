@@ -6,7 +6,7 @@ import smtplib
 from email.mime.text import MIMEText
 import random
 
-# ====== Gửi OTP RANDOM (ỔN ĐỊNH NHẤT) ======
+# Gửi OTP dùng secrets chuẩn, random OTP như bản gốc ban đầu
 def send_email(receiver_email, otp):
     sender_email = st.secrets["EMAIL"]
     sender_pass = st.secrets["EMAIL_PASS"]
@@ -18,7 +18,7 @@ def send_email(receiver_email, otp):
         server.login(sender_email, sender_pass)
         server.send_message(msg)
 
-# ====== Hàm lấy Năm ======
+# Hàm lấy năm chuẩn
 def def_year_choose(_):
     url = 'https://www.scimagojr.com/journalrank.php'
     soup = BeautifulSoup(requests.get(url).content, 'html.parser')
@@ -26,7 +26,7 @@ def def_year_choose(_):
     year = st.selectbox("Chọn năm", years)
     return year
 
-# ====== Các hàm tra cứu stub ======
+# Các hàm placeholder giữ nguyên
 def def_list_all_subject(year):
     st.write(f"Danh sách chuyên ngành - {year}")
 
@@ -42,7 +42,7 @@ def def_rank_by_rank_key(year):
 def def_rank_by_Q_key(year):
     st.write(f"Từ khóa & Q - {year}")
 
-# ====== Giao diện OTP Random Chuẩn ======
+# Giao diện giữ nguyên chuẩn ban đầu
 st.set_page_config(layout="wide")
 st.title("Đăng nhập OTP TDTU")
 
