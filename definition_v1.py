@@ -207,45 +207,90 @@ def def_list_all_subject(year):
             st.write(f"- {cat.text.strip()}")
 
 def def_check_in_scopus_sjr_wos(year):
-    st.subheader(f"Kiểm tra Scopus/SJR/WoS - Năm {year}")
-    query = st.text_input("Nhập Tên/ISSN")
+    st.subheader(f"Kiểm tra tạp chí trong Scopus/SJR/WoS - Năm {year}")
+    query = st.text_input("Nhập Tên hoặc ISSN để tra cứu")
     if st.button("Kiểm tra"):
         url = f"https://www.scimagojr.com/journalsearch.php?q={query}"
         r = requests.get(url)
-        s = BeautifulSoup(r.content, 'html.parser')
-        if s.find('h1'):
-            st.success(f"Tìm thấy: {s.find('h1').text.strip()}")
+        soup = BeautifulSoup(r.content, 'html.parser')
+
+        # Lấy tên chính xác
+        title = soup.find('h1').text.strip() if soup.find('h1') else None
+
+        if title:
+            st.success(f"✅ Tìm thấy: **{title}**")
+            # Lấy ISSN, Publisher, Coverage
+            issn = soup.find('h2', string='ISSN')
+            issn = issn.find_next('p').text.strip() if issn else 'N/A'
+            pub = soup.find('h2', string='Publisher')
+            pub = pub.find_next('a').text.strip() if pub else 'N/A'
+            coverage = soup.find('h2', string='Coverage')
+            coverage = coverage.find_next('p').text.strip() if coverage else 'N/A'
+
+            st.write(f"- **ISSN**: {issn}")
+            st.write(f"- **Publisher**: {pub}")
+            st.write(f"- **Coverage**: {coverage}")
+
+            # Link trực tiếp
+            st.markdown(f"[🔗 Xem chi tiết trên SJR](https://www.scimagojr.com/journalsearch.php?q={query})")
         else:
-            st.warning(f"Không tìm thấy '{query}'")
+            st.warning(f"❌ Không tìm thấy **{query}** trong Scopus/SJR/WoS.")
 
 def def_rank_by_rank_key(year):
-    st.subheader(f"Tìm theo Từ khóa & Hạng - Năm {year}")
-    key = st.text_input("Nhập từ khóa")
-    if st.button("Tìm theo Hạng"):
-        url = f"https://www.scimagojr.com/journalrank.php?year={year}&search={key}"
+    st.subheader(f"Tra cứu tạp chí theo Từ khóa - Năm {year}")
+    keyword = st.text_input("Nhập Từ khóa")
+    if st.button("Tìm kiếm theo từ khóa"):
+        url = f"https://www.scimagojr.com/journalrank.php?year={year}&search={keyword}"
         r = requests.get(url)
-        s = BeautifulSoup(r.content, 'html.parser')
-        rows = s.find_all('tr', class_='grp')
+        soup = BeautifulSoup(r.content, 'html.parser')
+
+        rows = []
+        for row in soup.find_all('tr', class_='grp'):
+            link = row.find('a')
+            name = link.text.strip()
+            cells = row.find_all('td')
+            q_value = cells[-1].text.strip() if len(cells) >= 1 else 'N/A'
+            rows.append([name, q_value])
+
         if rows:
-            for row in rows:
-                j = row.find('a').text.strip()
-                q = row.find_all('td')[-1].text.strip()
-                st.write(f"🔎 {j} | Q: {q}")
+            df = pd.DataFrame(rows, columns=['Tên tạp chí', 'Q'])
+            st.dataframe(df)
+            st.download_button(
+                "📥 Tải danh sách",
+                df.to_csv(index=False).encode('utf-8'),
+                file_name=f"rank_by_keyword_{keyword}_{year}.csv",
+                mime='text/csv'
+            )
         else:
-            st.warning(f"Không tìm thấy '{key}'")
+            st.warning(f"❌ Không tìm thấy kết quả cho từ khóa: **{keyword}**.")
 
 def def_rank_by_Q_key(year):
-    st.subheader(f"Tìm theo Từ khóa & Quartile - Năm {year}")
-    key = st.text_input("Nhập từ khóa Q")
-    if st.button("Tìm Quartile"):
-        url = f"https://www.scimagojr.com/journalrank.php?year={year}&search={key}"
+    st.subheader(f"Lọc tạp chí theo Quartile - Năm {year}")
+    quartile = st.selectbox("Chọn Quartile cần lọc", ['Q1', 'Q2', 'Q3', 'Q4'])
+    keyword = st.text_input("Nhập Từ khóa (tuỳ chọn)")
+
+    if st.button("Lọc theo Quartile"):
+        url = f"https://www.scimagojr.com/journalrank.php?year={year}&search={keyword}"
         r = requests.get(url)
-        s = BeautifulSoup(r.content, 'html.parser')
-        rows = s.find_all('tr', class_='grp')
+        soup = BeautifulSoup(r.content, 'html.parser')
+
+        rows = []
+        for row in soup.find_all('tr', class_='grp'):
+            link = row.find('a')
+            name = link.text.strip()
+            cells = row.find_all('td')
+            q_value = cells[-1].text.strip() if len(cells) >= 1 else 'N/A'
+            if quartile in q_value:
+                rows.append([name, q_value])
+
         if rows:
-            for row in rows:
-                j = row.find('a').text.strip()
-                q = row.find_all('td')[-1].text.strip()
-                st.write(f"🔎 {j} | Q: {q}")
+            df = pd.DataFrame(rows, columns=['Tên tạp chí', 'Q'])
+            st.dataframe(df)
+            st.download_button(
+                "📥 Tải danh sách",
+                df.to_csv(index=False).encode('utf-8'),
+                file_name=f"rank_by_Q_{quartile}_{year}.csv",
+                mime='text/csv'
+            )
         else:
-            st.warning(f"Không tìm thấy '{key}'")
+            st.warning(f"❌ Không tìm thấy tạp chí Q phù hợp ({quartile}).")
