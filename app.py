@@ -50,7 +50,7 @@ def def_rank_by_Q_key(year):
 
 # Giao diện chuẩn
 st.set_page_config(layout="wide")
-st.title("Đăng nhập OTP TDTU")
+st.title("Chào mừng bạn đến với công cụ tra thông tin tạp chí \n Tác giả: Nguyễn Hữu Cần")
 
 if 'authenticated' not in st.session_state: st.session_state['authenticated'] = False
 if 'otp_sent' not in st.session_state: st.session_state['otp_sent'] = ''
