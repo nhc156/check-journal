@@ -7,7 +7,7 @@ from email.mime.text import MIMEText
 import random
 import os
 from dotenv import load_dotenv
-from choose-year import def_year_choose
+from choose_year import def_year_choose
 
 # Tải biến môi trường
 load_dotenv()
