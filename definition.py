@@ -6,15 +6,17 @@ from concurrent.futures import ThreadPoolExecutor
 import re
 
 # ========================
-# Chuẩn hoá chuỗi
+# Helper
 # ========================
+
 def clear_format(text):
     text = re.sub(r'\W+', ' ', text)
     return ' '.join(text.lower().split())
 
 # ========================
-# Hàm tính Rank_HQ
+# Hàm rank_h_q
 # ========================
+
 def check_rank_by_h_q(total_journals, percent, sjr_quartile):
     if total_journals >= 2000:
         thresholds = [0.5, 1, 5, 10, 18, 30, 43, 56, 69, 82]
@@ -62,16 +64,15 @@ def check_rank_by_h_q(total_journals, percent, sjr_quartile):
         return 'Không xếp hạng', Top_Percent, 'Không có Q phù hợp'
 
 # ========================
-# Hàm chính: tìm tạp chí
+# Crawler gốc
 # ========================
+
 def find_title_or_issn(name_or_issn):
     url = f"https://www.scimagojr.com/journalsearch.php?q={name_or_issn}"
     response = requests.get(url)
     soup = BeautifulSoup(response.content, 'html.parser')
-
     rows = []
     STT = 0
-
     for link in soup.find_all('a', href=True):
         if 'journalsearch.php?q=' in link['href']:
             title_journal = link.find('span', class_='jrnlname').text
@@ -100,9 +101,6 @@ def find_title_or_issn(name_or_issn):
 
     return pd.DataFrame(rows, columns=['STT', 'Tên tạp chí', 'ISSN', 'Nhà xuất bản', 'ID Scopus'])
 
-# ========================
-# Lấy chi tiết tạp chí
-# ========================
 def id_scopus_to_all(id_scopus_input):
     url = f"https://www.scimagojr.com/journalsearch.php?q={id_scopus_input}&tip=sid&clean=0"
     response = requests.get(url)
@@ -137,13 +135,9 @@ def id_scopus_to_all(id_scopus_input):
 
     return name_journal, country, treecategory_dict, publisher, issn, coverage, homepage, howtopublish, email
 
-# ========================
-# Tìm hạng theo tên
-# ========================
 def check_rank_by_name_1_journal(search_name_journal, subject_area_category, year_check):
     rows = []
     STT = 0
-
     def fetch(url, category, id_cat, total, page):
         nonlocal STT
         r = requests.get(url)
@@ -161,7 +155,6 @@ def check_rank_by_name_1_journal(search_name_journal, subject_area_category, yea
                     rank, top, note = check_rank_by_h_q(total, percent, q)
                     rows.append([STT, name, rank, q, int(h), int(pos), int(total), percent, top, category, id_cat, int(page), note])
                     break
-
     with ThreadPoolExecutor(max_workers=10) as ex:
         futures = []
         for cat, id_cat in subject_area_category.items():
@@ -173,12 +166,27 @@ def check_rank_by_name_1_journal(search_name_journal, subject_area_category, yea
                 futures.append(ex.submit(fetch, url, cat, id_cat, total, page))
         for f in futures:
             f.result()
-
     return pd.DataFrame(rows, columns=['STT', 'Tên tạp chí', 'Hạng', 'Chỉ số Q', 'H-index', 'Vị trí', 'Tổng số tạp chí', 'Phần trăm', 'Top phần trăm', 'Chuyên ngành', 'ID Chuyên ngành', 'Trang', 'Ghi chú'])
 
 # ========================
-# Các hàm giao diện còn lại
+# === GIAO DIỆN STREAMLIT ===
 # ========================
+
+def def_rank_by_name_or_issn(year):
+    st.subheader(f"Tìm tạp chí theo Tên/ISSN - Năm {year}")
+    keyword = st.text_input("Nhập Tên hoặc ISSN")
+    if st.button("Tìm kiếm"):
+        df = find_title_or_issn(keyword)
+        st.dataframe(df)
+        if not df.empty:
+            choose = st.selectbox("Chọn tạp chí", df['Tên tạp chí'])
+            if st.button("Xem hạng"):
+                selected = df[df['Tên tạp chí'] == choose].iloc[0]
+                id_scopus = selected['ID Scopus']
+                name_j, country, cats, pub, issn, cover, home, howpub, mail = id_scopus_to_all(id_scopus)
+                df_rank = check_rank_by_name_1_journal(name_j, cats, year)
+                st.dataframe(df_rank)
+
 def def_list_all_subject(year):
     st.subheader(f"Danh sách chuyên ngành - Năm {year}")
     url = f'https://www.scimagojr.com/journalrank.php?year={year}'
@@ -192,47 +200,44 @@ def def_list_all_subject(year):
 
 def def_check_in_scopus_sjr_wos(year):
     st.subheader(f"Kiểm tra Scopus/SJR/WoS - Năm {year}")
-    query = st.text_input("Nhập Tên hoặc ISSN")
+    query = st.text_input("Nhập Tên/ISSN")
     if st.button("Kiểm tra"):
-        if query:
-            url = f"https://www.scimagojr.com/journalsearch.php?q={query}"
-            r = requests.get(url)
-            s = BeautifulSoup(r.content, 'html.parser')
-            if s.find('h1'):
-                st.success(f"Tìm thấy: {s.find('h1').text.strip()}")
-            else:
-                st.warning(f"Không tìm thấy '{query}'")
+        url = f"https://www.scimagojr.com/journalsearch.php?q={query}"
+        r = requests.get(url)
+        s = BeautifulSoup(r.content, 'html.parser')
+        if s.find('h1'):
+            st.success(f"Tìm thấy: {s.find('h1').text.strip()}")
+        else:
+            st.warning(f"Không tìm thấy '{query}'")
 
 def def_rank_by_rank_key(year):
     st.subheader(f"Tìm theo Từ khóa & Hạng - Năm {year}")
     key = st.text_input("Nhập từ khóa")
     if st.button("Tìm theo Hạng"):
-        if key:
-            url = f"https://www.scimagojr.com/journalrank.php?year={year}&search={key}"
-            r = requests.get(url)
-            s = BeautifulSoup(r.content, 'html.parser')
-            rows = s.find_all('tr', class_='grp')
-            if rows:
-                for row in rows:
-                    j = row.find('a').text.strip()
-                    q = row.find_all('td')[-1].text.strip()
-                    st.write(f"🔎 {j} | Q: {q}")
-            else:
-                st.warning(f"Không tìm thấy '{key}'")
+        url = f"https://www.scimagojr.com/journalrank.php?year={year}&search={key}"
+        r = requests.get(url)
+        s = BeautifulSoup(r.content, 'html.parser')
+        rows = s.find_all('tr', class_='grp')
+        if rows:
+            for row in rows:
+                j = row.find('a').text.strip()
+                q = row.find_all('td')[-1].text.strip()
+                st.write(f"🔎 {j} | Q: {q}")
+        else:
+            st.warning(f"Không tìm thấy '{key}'")
 
 def def_rank_by_Q_key(year):
     st.subheader(f"Tìm theo Từ khóa & Quartile - Năm {year}")
     key = st.text_input("Nhập từ khóa Q")
     if st.button("Tìm Quartile"):
-        if key:
-            url = f"https://www.scimagojr.com/journalrank.php?year={year}&search={key}"
-            r = requests.get(url)
-            s = BeautifulSoup(r.content, 'html.parser')
-            rows = s.find_all('tr', class_='grp')
-            if rows:
-                for row in rows:
-                    j = row.find('a').text.strip()
-                    q = row.find_all('td')[-1].text.strip()
-                    st.write(f"🔎 {j} | Q: {q}")
-            else:
-                st.warning(f"Không tìm thấy Q cho '{key}'")
+        url = f"https://www.scimagojr.com/journalrank.php?year={year}&search={key}"
+        r = requests.get(url)
+        s = BeautifulSoup(r.content, 'html.parser')
+        rows = s.find_all('tr', class_='grp')
+        if rows:
+            for row in rows:
+                j = row.find('a').text.strip()
+                q = row.find_all('td')[-1].text.strip()
+                st.write(f"🔎 {j} | Q: {q}")
+        else:
+            st.warning(f"Không tìm thấy '{key}'")
