@@ -7,6 +7,7 @@ from email.mime.text import MIMEText
 import random
 import os
 from dotenv import load_dotenv
+from choose_year import def_year_choose
 
 # Tải biến môi trường
 load_dotenv()
@@ -25,12 +26,9 @@ def send_email(receiver_email, otp):
         server.send_message(msg)
 
 # Hàm lấy năm chuẩn
-def def_year_choose(_):
-    url = 'https://www.scimagojr.com/journalrank.php'
-    soup = BeautifulSoup(requests.get(url).content, 'html.parser')
-    years = sorted({a.text.strip() for a in soup.find_all('a', class_='dropdown-element') if a.text.strip().isdigit()}, reverse=True)[:5]
-    year = st.selectbox("Chọn năm", years)
-    return year
+def main():
+    st.title("Tra cứu năm mới nhất - Scimago")
+    def_year_choose()
 
 # Các hàm placeholder giữ nguyên
 def def_list_all_subject(year):
