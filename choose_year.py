@@ -13,11 +13,19 @@ def def_year_choose(year):
         list_years = [element.text.strip() for element in elements if element.text.strip().isdigit()]
         years = sorted(list_years, reverse=True)[:5]
 
+    if not years:
+        st.warning("Không lấy được danh sách năm. Dùng năm cũ!")
+        return int(year)
+
     selected_year = st.selectbox(
         "Chọn năm tra cứu (5 năm mới nhất):",
         years,
         index=years.index(str(year)) if str(year) in years else 0
     )
+
+    if not selected_year:
+        st.warning("Không chọn được năm. Giữ nguyên năm cũ!")
+        return int(year)
 
     if st.button("Xác nhận"):
         st.success(f'Năm đã chọn: {selected_year}')
