@@ -13,9 +13,7 @@ from choose_year import def_year_choose
 load_dotenv()
 sender_email = os.getenv('EMAIL')
 sender_pass = os.getenv('EMAIL_PASS')
-
 # Hàm gửi OTP
-
 def send_email(receiver_email, otp):
     msg = MIMEText(f"Mã OTP đăng nhập của bạn: {otp}")
     msg['Subject'] = "Mã đăng nhập"
@@ -58,10 +56,10 @@ if not st.session_state['authenticated']:
     user_email = st.text_input("Nhập email @tdtu.edu.vn để nhận OTP")
     if st.button("Gửi OTP"):
         if "@tdtu.edu.vn" in user_email:
-            otp = 111 # str(random.randint(100, 200))
+            otp = str(random.randint(100, 200))
             st.session_state['otp_sent'] = otp
             send_email(user_email, otp)
-            st.success("Mã OTP đã được gửi đến email của bạn.")
+            st.success(f"Mã OTP {otp} đã được gửi đến email của bạn.")
         else:
             st.warning("Bạn chỉ được nhập email @tdtu.edu.vn")
     otp_in = st.text_input("Nhập OTP", type="password")
