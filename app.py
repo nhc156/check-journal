@@ -73,7 +73,7 @@ if not st.session_state['authenticated']:
 
 if st.session_state['authenticated']:
     st.header("Tra cứu tạp chí")
-    tabs = st.tabs(["Năm", "Tên/ISSN", "Chuyên ngành", "Phân loại", "Từ khóa Hạng", "Từ khóa Q"])
+    tabs = st.tabs(["Năm tra cứu", "Tên tạp chí hoặc ISSN", "Danh sách chuyên ngành", "Phân loại tạp chí", "Lọc tạp chí theo Từ khóa và Hạng", "Lọc tạp chí theo Từ khóa và Q"])
     with tabs[0]: st.session_state['year'] = def_year_choose(st.session_state['year'])
     with tabs[1]: def_rank_by_name_or_issn(st.session_state['year'])
     with tabs[2]: def_list_all_subject(st.session_state['year'])
