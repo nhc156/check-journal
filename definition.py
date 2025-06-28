@@ -175,17 +175,25 @@ def check_rank_by_name_1_journal(search_name_journal, subject_area_category, yea
 def def_rank_by_name_or_issn(year):
     st.subheader(f"Tìm tạp chí theo Tên/ISSN - Năm {year}")
     keyword = st.text_input("Nhập Tên hoặc ISSN")
+
     if st.button("Tìm kiếm"):
         df = find_title_or_issn(keyword)
+        st.session_state['df_search'] = df  # LƯU vào session
+    else:
+        df = st.session_state.get('df_search', pd.DataFrame())
+
+    if not df.empty:
         st.dataframe(df)
-        if not df.empty:
-            choose = st.selectbox("Chọn tạp chí", df['Tên tạp chí'])
-            if st.button("Xem hạng"):
-                selected = df[df['Tên tạp chí'] == choose].iloc[0]
-                id_scopus = selected['ID Scopus']
-                name_j, country, cats, pub, issn, cover, home, howpub, mail = id_scopus_to_all(id_scopus)
-                df_rank = check_rank_by_name_1_journal(name_j, cats, year)
-                st.dataframe(df_rank)
+        choose = st.selectbox("Chọn tạp chí", df['Tên tạp chí'])
+        st.session_state['choose_journal'] = choose  # LƯU chọn
+
+        if st.button("Xem hạng"):
+            selected = df[df['Tên tạp chí'] == choose].iloc[0]
+            id_scopus = selected['ID Scopus']
+            name_j, country, cats, pub, issn, cover, home, howpub, mail = id_scopus_to_all(id_scopus)
+            df_rank = check_rank_by_name_1_journal(name_j, cats, year)
+            st.dataframe(df_rank)
+
 
 def def_list_all_subject(year):
     st.subheader(f"Danh sách chuyên ngành - Năm {year}")
