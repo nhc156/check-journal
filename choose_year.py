@@ -30,7 +30,7 @@ def def_year_choose(year):
     if st.button("Xác nhận"):
         st.success(f'Năm đã chọn: {selected_year}')
         with st.spinner(f"Đang tải dữ liệu năm {selected_year}..."):
-            st.info(f"Đã tải dữ liệu cho năm {selected_year}!")
+            #st.info(f"Đã tải dữ liệu cho năm {selected_year}!")
 
         st.session_state['year'] = int(selected_year)
 
