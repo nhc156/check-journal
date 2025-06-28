@@ -5,19 +5,24 @@ import requests
 from bs4 import BeautifulSoup
 
 def def_year_choose(year):
-    with st.spinner("Đang cập nhật năm mới nhất..."):
-        url_take_year_check = 'https://www.scimagojr.com/journalrank.php'
-        response_take_year = requests.get(url_take_year_check)
-        soup = BeautifulSoup(response_take_year.content, 'html.parser')
-        elements = soup.find_all('a', class_='dropdown-element')
-        list_years = [element.text.strip() for element in elements if element.text.strip().isdigit()]
-        years = sorted(list_years, reverse=True)[:5]
+    # Nếu chưa có danh sách năm thì tải từ web & lưu vào session_state
+    if 'years' not in st.session_state or not st.session_state['years']:
+        with st.spinner("Đang cập nhật năm mới nhất..."):
+            url_take_year_check = 'https://www.scimagojr.com/journalrank.php'
+            response_take_year = requests.get(url_take_year_check)
+            soup = BeautifulSoup(response_take_year.content, 'html.parser')
+            elements = soup.find_all('a', class_='dropdown-element')
+            list_years = [element.text.strip() for element in elements if element.text.strip().isdigit()]
+            years = sorted(list_years, reverse=True)[:5]
+            if years:
+                st.session_state['years'] = years
+            else:
+                st.warning("Không lấy được danh sách năm. Dùng năm hiện tại!")
+                st.session_state['years'] = [str(year)]
 
-    if not years:
-        st.warning("Không lấy được danh sách năm. Dùng năm hiện tại!")
-        return int(year)
+    years = st.session_state['years']
 
-    # Nếu chưa có trong session_state thì gán mặc định là năm mới nhất
+    # Nếu chưa có năm được chọn thì set mặc định là năm mới nhất
     if 'year' not in st.session_state or st.session_state['year'] is None:
         st.session_state['year'] = int(years[0])
 
