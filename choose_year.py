@@ -14,24 +14,24 @@ def def_year_choose(year):
         years = sorted(list_years, reverse=True)[:5]
 
     if not years:
-        st.warning("Không lấy được danh sách năm. Dùng năm cũ!")
+        st.warning("Không lấy được danh sách năm. Dùng năm hiện tại!")
         return int(year)
+
+    # Nếu chưa có trong session_state thì gán mặc định là năm mới nhất
+    if 'year' not in st.session_state or st.session_state['year'] is None:
+        st.session_state['year'] = int(years[0])
 
     selected_year = st.selectbox(
         "Chọn năm tra cứu (5 năm mới nhất):",
         years,
-        index=years.index(str(year)) if str(year) in years else 0
+        index=years.index(str(st.session_state['year'])) if str(st.session_state['year']) in years else 0
     )
-
-    if not selected_year:
-        st.warning("Không chọn được năm. Giữ nguyên năm cũ!")
-        return int(year)
 
     if st.button("Xác nhận"):
         st.success(f'Năm đã chọn: {selected_year}')
         with st.spinner(f"Đang tải dữ liệu năm {selected_year}..."):
             st.info(f"Đã tải dữ liệu cho năm {selected_year}!")
 
-        return int(selected_year)
-    else:
-        return int(year)
+        st.session_state['year'] = int(selected_year)
+
+    return int(st.session_state['year'])
