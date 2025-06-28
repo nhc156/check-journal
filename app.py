@@ -66,7 +66,7 @@ if not st.session_state['authenticated']:
     if st.button("Đăng nhập"):
         if otp_in == st.session_state['otp_sent']:
             st.session_state['authenticated'] = True
-            st.success("Đăng nhập thành công!")
+            st.success("Đăng nhập thành công! Hãy bấm Đăng nhập lần nữa để sử dụng ứng dụng")
         else:
             st.error("Mã OTP không đúng hoặc chưa gửi mã!")
     st.stop()
