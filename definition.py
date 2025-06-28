@@ -201,10 +201,26 @@ def def_list_all_subject(year):
     r = requests.get(url)
     soup = BeautifulSoup(r.content, 'html.parser')
     areas = soup.find_all('div', class_='area')
+
+    rows = []
     for a in areas:
-        st.write(f"📌 {a.find('h4').text.strip()}")
+        area_name = a.find('h4').text.strip()
         for cat in a.find_all('a'):
-            st.write(f"- {cat.text.strip()}")
+            cat_name = cat.text.strip()
+            cat_link = f"https://www.scimagojr.com/{cat['href']}"
+            rows.append([area_name, cat_name, cat_link])
+
+    if rows:
+        df = pd.DataFrame(rows, columns=['Lĩnh vực', 'Chuyên ngành', 'Link'])
+        st.dataframe(df)
+        st.download_button(
+            "📥 Tải danh sách chuyên ngành",
+            df.to_csv(index=False).encode('utf-8'),
+            file_name=f"subject_list_{year}.csv",
+            mime='text/csv'
+        )
+    else:
+        st.warning("Không tìm thấy dữ liệu.")
 
 def def_check_in_scopus_sjr_wos(year):
     st.subheader(f"Kiểm tra tạp chí trong Scopus/SJR/WoS - Năm {year}")
@@ -212,14 +228,13 @@ def def_check_in_scopus_sjr_wos(year):
     if st.button("Kiểm tra"):
         url = f"https://www.scimagojr.com/journalsearch.php?q={query}"
         r = requests.get(url)
+        r.encoding = 'utf-8'
         soup = BeautifulSoup(r.content, 'html.parser')
 
-        # Lấy tên chính xác
         title = soup.find('h1').text.strip() if soup.find('h1') else None
 
         if title:
             st.success(f"✅ Tìm thấy: **{title}**")
-            # Lấy ISSN, Publisher, Coverage
             issn = soup.find('h2', string='ISSN')
             issn = issn.find_next('p').text.strip() if issn else 'N/A'
             pub = soup.find('h2', string='Publisher')
@@ -231,7 +246,6 @@ def def_check_in_scopus_sjr_wos(year):
             st.write(f"- **Publisher**: {pub}")
             st.write(f"- **Coverage**: {coverage}")
 
-            # Link trực tiếp
             st.markdown(f"[🔗 Xem chi tiết trên SJR](https://www.scimagojr.com/journalsearch.php?q={query})")
         else:
             st.warning(f"❌ Không tìm thấy **{query}** trong Scopus/SJR/WoS.")
@@ -245,12 +259,14 @@ def def_rank_by_rank_key(year):
         soup = BeautifulSoup(r.content, 'html.parser')
 
         rows = []
-        for row in soup.find_all('tr', class_='grp'):
-            link = row.find('a')
-            name = link.text.strip()
+        for row in soup.find_all('tr'):
             cells = row.find_all('td')
-            q_value = cells[-1].text.strip() if len(cells) >= 1 else 'N/A'
-            rows.append([name, q_value])
+            if len(cells) >= 5:
+                link = row.find('a')
+                if link:
+                    name = link.text.strip()
+                    q_value = cells[-1].text.strip()
+                    rows.append([name, q_value])
 
         if rows:
             df = pd.DataFrame(rows, columns=['Tên tạp chí', 'Q'])
@@ -275,13 +291,15 @@ def def_rank_by_Q_key(year):
         soup = BeautifulSoup(r.content, 'html.parser')
 
         rows = []
-        for row in soup.find_all('tr', class_='grp'):
-            link = row.find('a')
-            name = link.text.strip()
+        for row in soup.find_all('tr'):
             cells = row.find_all('td')
-            q_value = cells[-1].text.strip() if len(cells) >= 1 else 'N/A'
-            if quartile in q_value:
-                rows.append([name, q_value])
+            if len(cells) >= 5:
+                link = row.find('a')
+                if link:
+                    name = link.text.strip()
+                    q_value = cells[-1].text.strip()
+                    if quartile in q_value:
+                        rows.append([name, q_value])
 
         if rows:
             df = pd.DataFrame(rows, columns=['Tên tạp chí', 'Q'])
