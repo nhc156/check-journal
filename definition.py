@@ -2,17 +2,6 @@ import streamlit as st
 import requests
 from bs4 import BeautifulSoup
 
-def def_year_choose(_):
-    url_take_year_check = 'https://www.scimagojr.com/journalrank.php'
-    response_take_year = requests.get(url_take_year_check)
-    soup = BeautifulSoup(response_take_year.content, 'html.parser')
-    elements = soup.find_all('a', class_='dropdown-element')
-    list_years = [element.text.strip() for element in elements if element.text.strip().isdigit()]
-    years = sorted(list_years, reverse=True)[:5]
-    year = st.selectbox("Chọn năm tra cứu (5 năm mới nhất)", years)
-    st.success(f"Năm đã chọn: {year}")
-    return year
-
 def def_list_all_subject(year):
     st.subheader(f"Danh sách chuyên ngành - Năm {year}")
     url = f'https://www.scimagojr.com/journalrank.php?year={year}'
