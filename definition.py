@@ -18,50 +18,58 @@ def clear_format(text):
 # ========================
 
 def check_rank_by_h_q(total_journals, percent, sjr_quartile):
-    if total_journals >= 2000:
-        thresholds = [0.5, 1, 5, 10, 18, 30, 43, 56, 69, 82]
-    elif 1500 <= total_journals <= 1999:
-        thresholds = [0.5, 2, 6, 11, 19, 31, 44, 57, 70, 83]
-    elif 1000 <= total_journals <= 1499:
-        thresholds = [0.5, 3, 7, 12, 20, 32, 45, 58, 71, 84]
-    elif 500 <= total_journals <= 999:
-        thresholds = [0.5, 4, 8, 13, 21, 33, 46, 59, 72, 85]
-    elif 200 <= total_journals <= 499:
-        thresholds = [0.9, 5, 10, 15, 23, 35, 48, 61, 74, 87]
-    elif 50 <= total_journals <= 199:
-        thresholds = [2.5, 6, 11, 16, 24, 36, 49, 62, 75, 88]
-    elif 0 < total_journals < 50:
-        thresholds = [3.5, 7, 15, 20, 28, 40, 53, 66, 79, 92]
-    else:
-        return 'None', 'None', 'Lỗi số lượng tạp chí'
-
-    rank_h = next((i for i, th in enumerate(thresholds) if percent < th), 10)
-    Top_Percent = '< ' + str(thresholds[rank_h]) if rank_h < len(thresholds) else '>= ' + str(thresholds[-1])
-
-    if (rank_h == 0) and (sjr_quartile == 'Q1'):
-        return 'Ngoại hạng', Top_Percent, ''
-    elif (rank_h == 1) and (sjr_quartile == 'Q1'):
-        return 'Hạng 1', Top_Percent, ''
-    elif (rank_h == 2) and (sjr_quartile in ['Q1', 'Q2']):
-        return 'Hạng 2', Top_Percent, ''
-    elif (rank_h == 3) and (sjr_quartile in ['Q1', 'Q2']):
-        return 'Hạng 3', Top_Percent, ''
-    elif (rank_h == 4) and (sjr_quartile in ['Q1', 'Q2']):
-        return 'Hạng 4', Top_Percent, ''
-    elif (rank_h == 5) and (sjr_quartile in ['Q1', 'Q2', 'Q3']):
-        return 'Hạng 5', Top_Percent, ''
-    elif (rank_h == 6) and (sjr_quartile in ['Q1', 'Q2', 'Q3']):
-        return 'Hạng 6', Top_Percent, ''
-    elif (rank_h == 7) and (sjr_quartile in ['Q1', 'Q2', 'Q3']):
-        return 'Hạng 7', Top_Percent, ''
-    elif (rank_h == 8) and (sjr_quartile in ['Q1', 'Q2', 'Q3']):
-        return 'Hạng 8', Top_Percent, ''
-    elif (rank_h == 9) and (sjr_quartile in ['Q1', 'Q2', 'Q3', 'Q4']):
-        return 'Hạng 9', Top_Percent, ''
-    elif (rank_h == 10) and (sjr_quartile in ['Q1', 'Q2', 'Q3', 'Q4']):
-        return 'Hạng 10', Top_Percent, ''
-    else:
-        return 'Không xếp hạng', Top_Percent, 'Không có Q phù hợp'
+        # Xác định rank_h dựa trên total_journals và Percent
+        if total_journals >= 2000:
+            thresholds = [0.5, 1, 5, 10, 18, 30, 43, 56, 69, 82]
+        elif 1500 <= total_journals <= 1999:
+            thresholds = [0.5, 2, 6, 11, 19, 31, 44, 57, 70, 83]
+        elif 1000 <= total_journals <= 1499:
+            thresholds = [0.5, 3, 7, 12, 20, 32, 45, 58, 71, 84]
+        elif 500 <= total_journals <= 999:
+            thresholds = [0.5, 4, 8, 13, 21, 33, 46, 59, 72, 85]
+        elif 200 <= total_journals <= 499:
+            thresholds = [0.9, 5, 10, 15, 23, 35, 48, 61, 74, 87]
+        elif 50 <= total_journals <= 199:
+            thresholds = [2.5, 6, 11, 16, 24, 36, 49, 62, 75, 88]
+        elif 0 < total_journals < 50:
+            thresholds = [3.5, 7, 15, 20, 28, 40, 53, 66, 79, 92]
+        else:
+            return 'None', 'None', 'Lỗi trong thống kê số lượng tạp chí'
+        rank_h = next((i for i, th in enumerate(thresholds, start=0) if percent < th), 10)
+        if rank_h < len(thresholds):
+            Top_Percent = '< ' + str(thresholds[rank_h])
+        else:
+            Top_Percent = '>= ' + str(thresholds[-1])
+        if (rank_h == 0) and (sjr_quartile == 'Q1'):
+            return 'Ngoại hạng chuyên ngành', Top_Percent, ''
+        elif (rank_h == 1) and  (sjr_quartile == 'Q1'):
+            return 'Hạng 1', Top_Percent, ''
+        elif (rank_h == 2) and  (sjr_quartile == 'Q1' or sjr_quartile == 'Q2'):
+            return 'Hạng 2', Top_Percent, ''
+        elif (rank_h == 3) and  (sjr_quartile == 'Q1' or sjr_quartile == 'Q2'):
+            return 'Hạng 3', Top_Percent, ''
+        elif (rank_h == 4) and  (sjr_quartile == 'Q1' or sjr_quartile == 'Q2'):
+            return 'Hạng 4', Top_Percent, ''
+        elif (rank_h == 5) and  (sjr_quartile == 'Q1' or sjr_quartile == 'Q2' or sjr_quartile == 'Q3'):
+            return 'Hạng 5', Top_Percent, ''
+        elif (rank_h == 6) and  (sjr_quartile == 'Q1' or sjr_quartile == 'Q2' or sjr_quartile == 'Q3'):
+            return 'Hạng 6', Top_Percent, ''
+        elif (rank_h == 7) and  (sjr_quartile == 'Q1' or sjr_quartile == 'Q2' or sjr_quartile == 'Q3'):
+            return 'Hạng 7', Top_Percent, ''
+        elif (rank_h == 8) and  (sjr_quartile == 'Q1' or sjr_quartile == 'Q2' or sjr_quartile == 'Q3'):
+            return 'Hạng 8', Top_Percent, ''
+        elif (rank_h == 9) and  (sjr_quartile == 'Q1' or sjr_quartile == 'Q2' or sjr_quartile == 'Q3' or sjr_quartile == 'Q4'):
+            return 'Hạng 9', Top_Percent, ''
+        elif (rank_h == 10) and (sjr_quartile == 'Q1' or sjr_quartile == 'Q2' or sjr_quartile == 'Q3' or sjr_quartile == 'Q4'):
+            return 'Hạng 10', Top_Percent, ''
+        elif (0 <= rank_h <= 1) and (sjr_quartile == 'Q2'):
+            return f'Hạng 2', Top_Percent, f"Rớt từ Hạng {rank_h} vì Q2"
+        elif (0 <= rank_h <= 4) and (sjr_quartile == 'Q3'):
+            return f'Hạng 5', Top_Percent, f"Rớt từ Hạng {rank_h} vì Q3"
+        elif (0 <= rank_h <= 8) and (sjr_quartile == 'Q4'):
+            return f'Hạng 9', Top_Percent, f"Rớt từ Hạng {rank_h} vì Q4"
+        else:
+            return 'Không xếp hạng', Top_Percent, 'Không có Q'
 
 # ========================
 # Crawler gốc
