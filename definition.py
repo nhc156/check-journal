@@ -200,7 +200,7 @@ def def_rank_by_name_or_issn(year):
             id_scopus = selected['ID Scopus']
             name_j, country, cats, pub, issn, cover, home, howpub, mail = id_scopus_to_all(id_scopus)
             df_rank = check_rank_by_name_1_journal(name_j, cats, year)
-            st.dataframe(df_rank)
+            st.dataframe(df_rank, use_container_width=True)
 
 
 def def_list_all_subject(year):
