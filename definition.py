@@ -240,7 +240,7 @@ def def_rank_by_name_or_issn(year):
             st.markdown(f"[🌐 Mở website Scopus của tạp chí '{row_chosen['Tên tạp chí']}', ISSN là '{issn}']({open_link_scopus})")
             #with col3:
             #st.markdown(f"[🌐 Mở Website MJL-WoS của tạp chí '{row_chosen['Tên tạp chí']}', ISSN là '{issn}']({open_link_wos})")
-            st.markdown(f"[🌐 Mở Website MJL-WoS của tạp chí '{row_chosen['Tên tạp chí']}', ISSN: '{issn}']({open_link_wos})")
+            st.markdown(f"[🌐 Mở Website MJL-WoS của tạp chí '{row_chosen['Tên tạp chí']}', ISSN: '{issn}'](<{open_link_wos}>)")
 
 
 
