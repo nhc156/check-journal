@@ -194,7 +194,15 @@ def def_rank_by_name_or_issn(year):
         st.dataframe(df)
         choose = st.selectbox("Chọn tạp chí", df['Tên tạp chí'])
         st.session_state['choose_journal'] = choose  # LƯU chọn
-
+        st.markdown("""
+            <style>
+            .main .block-container {
+                max-width: 1600px;
+                padding-left: 5rem;
+                padding-right: 5rem;
+            }
+            </style>
+        """, unsafe_allow_html=True)
         if st.button("Xem hạng"):
             selected = df[df['Tên tạp chí'] == choose].iloc[0]
             id_scopus = selected['ID Scopus']
