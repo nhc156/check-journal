@@ -221,7 +221,7 @@ def def_rank_by_name_or_issn(year):
 
         selected_line = st.selectbox(
             "Chọn dòng chuyên ngành để mở website",
-            df_rank['STT'].astype(str) + " - " + df_rank['Chuyên ngành'],
+            df_rank['STT'].astype(str) + " - " + df_rank['Chuyên ngành'] + " - " + df_rank['Hạng'],
             key="choose_line_rank"
         )
 
