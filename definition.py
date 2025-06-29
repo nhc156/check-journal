@@ -233,13 +233,13 @@ def def_rank_by_name_or_issn(year):
             open_link_scopus = f"https://www.scopus.com/sourceid/{id_scopus}"
             open_link_wos = f"https://mjl.clarivate.com:/search-results?issn={issn}&hide_exact_match_fl=true"
 
-            col1, col2, col3 = st.columns(3)
-            with col1:
-                st.markdown(f"[🌐 Mở website SJR của chuyên ngành {row_chosen['Chuyên ngành']}]({open_link_sjr})")
-            with col2:
-                st.markdown(f"[🌐 Mở website Scopus của tạp chí {row_chosen['Tên tạp chí']} ISSN {issn}]({open_link_scopus})")
-            with col3:
-                st.markdown(f"[🌐 Mở Website MJL-WoS của ISSN {issn}]({open_link_wos})")
+            #col1, col2, col3 = st.columns(3)
+            #with col1:
+            st.markdown(f"[🌐 Mở website SJR của tạp chí '{row_chosen['Tên tạp chí']}', chuyên ngành là '{row_chosen['Chuyên ngành']}']({open_link_sjr})")
+            #with col2:
+            st.markdown(f"[🌐 Mở website Scopus của tạp chí '{row_chosen['Tên tạp chí']}', ISSN là '{issn}']({open_link_scopus})")
+            #with col3:
+            st.markdown(f"[🌐 Mở Website MJL-WoS của tạp chí '{row_chosen['Tên tạp chí']}', ISSN là '{issn}']({open_link_wos})")
 
 
 
