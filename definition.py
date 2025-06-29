@@ -184,44 +184,32 @@ def def_rank_by_name_or_issn(year):
     st.subheader(f"Tìm tạp chí theo Tên/ISSN - Năm {year}")
     keyword = st.text_input("Nhập Tên hoặc ISSN")
 
+    # 🔑 Bước 1: Tìm kiếm và lưu
     if st.button("Tìm kiếm"):
         df = find_title_or_issn(keyword)
         st.session_state['df_search'] = df
 
     df = st.session_state.get('df_search', pd.DataFrame())
     if not df.empty:
-        st.dataframe(df, use_container_width=True, hide_index=True)
+        st.dataframe(df, use_container_width=True)
 
-        # Tạo label hiển thị STT - Tên
-        df['Tạp_chí_hiển_thị'] = df['STT'].astype(str) + " - " + df['Tên tạp chí']
+        # 🔑 Bước 2: Chọn tạp chí
+        choose = st.selectbox("Chọn tạp chí", df['Tên tạp chí'], key="choose_journal")
 
-        # Selectbox có index mặc định
-        choose_label = st.selectbox(
-            "Chọn tạp chí",
-            df['Tạp_chí_hiển_thị'],
-            key="choose_journal",
-            index=0
-        )
+        # 🔑 Bước 3: Chỉ cập nhật khi bấm "Xem hạng"
+        if st.button("Xem hạng"):
+            selected = df[df['Tên tạp chí'] == choose].iloc[0]
+            id_scopus = selected['ID Scopus']
+            issn = selected['ISSN']
 
-        # Nếu thực sự có lựa chọn thì mới xử lý
-        if choose_label:
-            try:
-                stt_chosen = int(choose_label.split(' - ')[0])
-                selected = df[df['STT'] == stt_chosen].iloc[0]
+            # Crawl chi tiết và bảng rank
+            name_j, country, cats, pub, issn_detail, cover, home, howpub, mail = id_scopus_to_all(id_scopus)
+            df_rank = check_rank_by_name_1_journal(name_j, cats, year)
 
-                if st.button("Xem hạng"):
-                    id_scopus = selected['ID Scopus']
-                    issn = selected['ISSN']
-
-                    name_j, country, cats, pub, issn_detail, cover, home, howpub, mail = id_scopus_to_all(id_scopus)
-                    df_rank = check_rank_by_name_1_journal(name_j, cats, year)
-
-                    st.session_state['df_rank'] = df_rank
-                    st.session_state['id_scopus'] = id_scopus
-                    st.session_state['issn'] = issn
-
-            except Exception as e:
-                st.warning(f"Lỗi xử lý STT: {e}")
+            # Lưu vào session_state
+            st.session_state['df_rank'] = df_rank
+            st.session_state['id_scopus'] = id_scopus
+            st.session_state['issn'] = issn
 
     # 🔑 Bước 4: LUÔN hiển thị nếu đã có dữ liệu
     df_rank = st.session_state.get('df_rank', pd.DataFrame())
@@ -229,7 +217,7 @@ def def_rank_by_name_or_issn(year):
     issn = st.session_state.get('issn', None)
 
     if not df_rank.empty and id_scopus and issn:
-        st.dataframe(df_rank, use_container_width=True, hide_index=True)
+        st.dataframe(df_rank, use_container_width=True)
 
         selected_line = st.selectbox(
             "Chọn dòng chuyên ngành để mở website",
