@@ -17,8 +17,8 @@ sender_pass = os.getenv('EMAIL_PASS')
 
 # Hàm gửi OTP
 def send_email(receiver_email, otp):
-    msg = MIMEText(f"\n Chào bạn, \n Tôi là Nguyễn Hữu Cần - Tác giả của ứng ụng này. \n Mã OTP đăng nhập của bạn là: {otp}")
-    msg['Subject'] = "Mã OTP đăng nhập ứng dụng tra cứu thông tin tạp chí"
+    msg = MIMEText(f" Xin chào, \n Tôi là Nguyễn Hữu Cần - Tác giả của ứng dụng này. \n Mã OTP đăng nhập của bạn là: {otp}")
+    msg['Subject'] = "Mã OTP đăng nhập ứng dụng check-journal"
     msg['From'] = sender_email
     msg['To'] = receiver_email
     with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
