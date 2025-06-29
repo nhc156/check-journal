@@ -184,47 +184,48 @@ def def_rank_by_name_or_issn(year):
     st.subheader(f"Tìm tạp chí theo Tên/ISSN - Năm {year}")
     keyword = st.text_input("Nhập Tên hoặc ISSN")
 
-    # Bước 1: Tìm kiếm
+    # 🔑 Bước 1: Tìm kiếm và lưu
     if st.button("Tìm kiếm"):
         df = find_title_or_issn(keyword)
-        st.session_state['df_search'] = df  # Lưu kết quả tìm kiếm
+        st.session_state['df_search'] = df
 
     df = st.session_state.get('df_search', pd.DataFrame())
-
     if not df.empty:
         st.dataframe(df, use_container_width=True)
 
-        # Bước 2: Chọn tạp chí
-        choose = st.selectbox("Chọn tạp chí", df['Tên tạp chí'])
-        st.session_state['choose_journal'] = choose
+        # 🔑 Bước 2: Chọn tạp chí
+        choose = st.selectbox("Chọn tạp chí", df['Tên tạp chí'], key="choose_journal")
 
-        # Bước 3: Nếu bấm Xem hạng thì LƯU bảng rank vào session
+        # 🔑 Bước 3: Chỉ cập nhật khi bấm "Xem hạng"
         if st.button("Xem hạng"):
             selected = df[df['Tên tạp chí'] == choose].iloc[0]
             id_scopus = selected['ID Scopus']
             issn = selected['ISSN']
 
+            # Crawl chi tiết và bảng rank
             name_j, country, cats, pub, issn_detail, cover, home, howpub, mail = id_scopus_to_all(id_scopus)
             df_rank = check_rank_by_name_1_journal(name_j, cats, year)
 
+            # Lưu vào session_state
             st.session_state['df_rank'] = df_rank
             st.session_state['id_scopus'] = id_scopus
             st.session_state['issn'] = issn
 
-    # ✅ Bước 4: LUÔN hiển thị bảng rank nếu có
+    # 🔑 Bước 4: LUÔN hiển thị nếu đã có dữ liệu
     df_rank = st.session_state.get('df_rank', pd.DataFrame())
     id_scopus = st.session_state.get('id_scopus', None)
     issn = st.session_state.get('issn', None)
 
-    if not df_rank.empty:
+    if not df_rank.empty and id_scopus and issn:
         st.dataframe(df_rank, use_container_width=True)
 
         selected_line = st.selectbox(
             "Chọn dòng chuyên ngành để mở website",
-            df_rank['STT'].astype(str) + " - " + df_rank['Chuyên ngành']
+            df_rank['STT'].astype(str) + " - " + df_rank['Chuyên ngành'],
+            key="choose_line_rank"
         )
 
-        if selected_line and id_scopus and issn:
+        if selected_line:
             stt_chosen = int(selected_line.split(' - ')[0])
             row_chosen = df_rank[df_rank['STT'] == stt_chosen].iloc[0]
 
@@ -239,7 +240,6 @@ def def_rank_by_name_or_issn(year):
                 st.markdown(f"[🌐 Mở Scopus]({open_link_scopus})")
             with col3:
                 st.markdown(f"[🌐 Mở WoS]({open_link_wos})")
-
 
 
 
