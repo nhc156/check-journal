@@ -43,7 +43,8 @@ if not st.session_state['authenticated']:
             otp = str(random.randint(100, 200))
             st.session_state['otp_sent'] = otp
             send_email(user_email, otp)
-            st.success(f"Mã OTP có 3 chữ số đã được gửi đến email của bạn.") # f"Mã OTP {otp} đã được gửi đến email của bạn."
+            st.success(f"Mã OTP {otp} đã được gửi đến email của bạn")
+            #st.success(f"Mã OTP có 3 chữ số đã được gửi đến email của bạn.")
         else:
             st.warning("Bạn chỉ được nhập email @tdtu.edu.vn")
     otp_in = st.text_input("Nhập OTP", type="password")
