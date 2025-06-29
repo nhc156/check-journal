@@ -194,7 +194,7 @@ def def_rank_by_name_or_issn(year):
         st.dataframe(df, use_container_width=True, hide_index=True)
 
         # 🔑 Bước 2: Chọn tạp chí
-        choose = st.selectbox("Chọn tạp chí", df['Tên tạp chí'], key="choose_journal")
+        choose = st.selectbox("Chọn tạp chí", df['STT'] + " - " + df['Tên tạp chí'], key="choose_journal")
 
         # 🔑 Bước 3: Chỉ cập nhật khi bấm "Xem hạng"
         if st.button("Xem hạng"):
