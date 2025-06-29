@@ -194,22 +194,22 @@ def def_rank_by_name_or_issn(year):
         st.dataframe(df)
         choose = st.selectbox("Chọn tạp chí", df['Tên tạp chí'])
         st.session_state['choose_journal'] = choose  # LƯU chọn
-        st.markdown("""
-            <style>
-            .main .block-container {
-                max-width: 1600px;
-                padding-left: 5rem;
-                padding-right: 5rem;
-            }
-            </style>
-        """, unsafe_allow_html=True)
         if st.button("Xem hạng"):
             selected = df[df['Tên tạp chí'] == choose].iloc[0]
             id_scopus = selected['ID Scopus']
             name_j, country, cats, pub, issn, cover, home, howpub, mail = id_scopus_to_all(id_scopus)
             df_rank = check_rank_by_name_1_journal(name_j, cats, year)
-            st.dataframe(df_rank, use_container_width=True)
-
+            st.dataframe(df_rank)
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            if st.button("Mở SJR"):
+                st.write(f"[Click để xem SJR]({open_link_sjr})")
+        with col2:
+            if st.button("Mở Scopus"):
+                st.write(f"[Click để xem Scopus]({open_link_scopus})")
+        with col3:
+            if st.button("Mở WoS"):
+                st.write(f"[Click để xem WoS]({open_link_wos})")
 
 def def_list_all_subject(year):
     st.subheader(f"Danh sách chuyên ngành - Năm {year}")
