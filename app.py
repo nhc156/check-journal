@@ -27,7 +27,7 @@ def send_email(receiver_email, otp):
 
 # Giao diện chuẩn
 st.set_page_config(layout="wide")
-st.title("Chào mừng bạn đến với công cụ tra thông tin tạp chí \n Tác giả: Nguyễn Hữu Cần")
+st.title("Chào mừng bạn đến với công cụ tra thông tin tạp chí \n Tác giả: Nguyễn Hữu Cần (Khoa Toán - Thống kê)")
 
 if 'authenticated' not in st.session_state:
     st.session_state['authenticated'] = False
