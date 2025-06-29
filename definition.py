@@ -235,7 +235,7 @@ def def_rank_by_name_or_issn(year):
 
             col1, col2, col3 = st.columns(3)
             with col1:
-                st.markdown(f"[🌐 Mở website SJR của chuyên ngành {df_rank['Chuyên ngành']}]({open_link_sjr})")
+                st.markdown(f"[🌐 Mở website SJR của chuyên ngành {row_chosen['Chuyên ngành']}]({open_link_sjr})")
             with col2:
                 st.markdown(f"[🌐 Mở website Scopus của ISSN {issn}]({open_link_scopus})")
             with col3:
