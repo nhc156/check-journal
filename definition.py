@@ -216,29 +216,31 @@ def def_rank_by_name_or_issn(year):
             st.dataframe(df_rank, use_container_width=True)
 
     # Bước 4: Chọn dòng chuyên ngành để tạo link
-    df_rank = st.session_state.get('df_rank', pd.DataFrame())
-
-    if not df_rank.empty:
-        selected_line = st.selectbox(
-            "Chọn dòng chuyên ngành để mở website",
-            df_rank['STT'].astype(str) + " - " + df_rank['Chuyên ngành']
-        )
-
-        if selected_line:
-            stt_chosen = int(selected_line.split(' - ')[0])
-            row_chosen = df_rank[df_rank['STT'] == stt_chosen].iloc[0]
-
-            open_link_sjr = f"https://www.scimagojr.com/journalrank.php?category={row_chosen['ID Chuyên ngành']}&year={year}&type=j&order=h&ord=desc&page={row_chosen['Trang']}&total_size={row_chosen['Tổng số tạp chí']}"
-            open_link_scopus = f"https://www.scopus.com/sourceid/{st.session_state['id_scopus']}"
-            open_link_wos = f"https://mjl.clarivate.com:/search-results?issn={st.session_state['issn']}&hide_exact_match_fl=true"
-
-            col1, col2, col3 = st.columns(3)
-            with col1:
-                st.markdown(f"[🌐 Mở SJR]({open_link_sjr})")
-            with col2:
-                st.markdown(f"[🌐 Mở Scopus]({open_link_scopus})")
-            with col3:
-                st.markdown(f"[🌐 Mở WoS]({open_link_wos})")
+            df_rank = st.session_state.get('df_rank', pd.DataFrame())
+            id_scopus = st.session_state.get('id_scopus', None)
+            issn = st.session_state.get('issn', None)
+            
+            if not df_rank.empty and id_scopus and issn:
+                selected_line = st.selectbox(
+                    "Chọn dòng chuyên ngành để mở website",
+                    df_rank['STT'].astype(str) + " - " + df_rank['Chuyên ngành']
+                )
+            
+                if selected_line:
+                    stt_chosen = int(selected_line.split(' - ')[0])
+                    row_chosen = df_rank[df_rank['STT'] == stt_chosen].iloc[0]
+            
+                    open_link_sjr = f"https://www.scimagojr.com/journalrank.php?category={row_chosen['ID Chuyên ngành']}&year={year}&type=j&order=h&ord=desc&page={row_chosen['Trang']}&total_size={row_chosen['Tổng số tạp chí']}"
+                    open_link_scopus = f"https://www.scopus.com/sourceid/{id_scopus}"
+                    open_link_wos = f"https://mjl.clarivate.com:/search-results?issn={issn}&hide_exact_match_fl=true"
+            
+                    col1, col2, col3 = st.columns(3)
+                    with col1:
+                        st.markdown(f"[🌐 Mở SJR]({open_link_sjr})")
+                    with col2:
+                        st.markdown(f"[🌐 Mở Scopus]({open_link_scopus})")
+                    with col3:
+                        st.markdown(f"[🌐 Mở WoS]({open_link_wos})")
 
 
 
