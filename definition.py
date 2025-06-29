@@ -193,20 +193,26 @@ def def_rank_by_name_or_issn(year):
     if not df.empty:
         st.dataframe(df, use_container_width=True, hide_index=True)
 
-        # 🔑 Bước 2: Chọn tạp chí
-        choose = st.selectbox("Chọn tạp chí", df['Tên tạp chí'], key="choose_journal")
+        # ✅ Tạo chuỗi hiển thị: STT - Tên tạp chí
+        df['Tạp_chí_hiển_thị'] = df['STT'].astype(str) + " - " + df['Tên tạp chí']
 
-        # 🔑 Bước 3: Chỉ cập nhật khi bấm "Xem hạng"
+        # 🔑 Bước 2: Chọn tạp chí bằng STT hiển thị
+        choose_label = st.selectbox("Chọn tạp chí", df['Tạp_chí_hiển_thị'], key="choose_journal")
+
+        # Tách STT đã chọn
+        stt_chosen = int(choose_label.split(' - ')[0])
+
+        # 🔑 Bước 3: Xem hạng
         if st.button("Xem hạng"):
-            selected = df[df['Tên tạp chí'] == choose].iloc[0]
+            selected = df[df['STT'] == stt_chosen].iloc[0]  # Truy bằng STT
             id_scopus = selected['ID Scopus']
             issn = selected['ISSN']
 
-            # Crawl chi tiết và bảng rank
+            # Crawl chi tiết + rank
             name_j, country, cats, pub, issn_detail, cover, home, howpub, mail = id_scopus_to_all(id_scopus)
             df_rank = check_rank_by_name_1_journal(name_j, cats, year)
 
-            # Lưu vào session_state
+            # Lưu
             st.session_state['df_rank'] = df_rank
             st.session_state['id_scopus'] = id_scopus
             st.session_state['issn'] = issn
