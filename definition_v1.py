@@ -18,50 +18,58 @@ def clear_format(text):
 # ========================
 
 def check_rank_by_h_q(total_journals, percent, sjr_quartile):
-    if total_journals >= 2000:
-        thresholds = [0.5, 1, 5, 10, 18, 30, 43, 56, 69, 82]
-    elif 1500 <= total_journals <= 1999:
-        thresholds = [0.5, 2, 6, 11, 19, 31, 44, 57, 70, 83]
-    elif 1000 <= total_journals <= 1499:
-        thresholds = [0.5, 3, 7, 12, 20, 32, 45, 58, 71, 84]
-    elif 500 <= total_journals <= 999:
-        thresholds = [0.5, 4, 8, 13, 21, 33, 46, 59, 72, 85]
-    elif 200 <= total_journals <= 499:
-        thresholds = [0.9, 5, 10, 15, 23, 35, 48, 61, 74, 87]
-    elif 50 <= total_journals <= 199:
-        thresholds = [2.5, 6, 11, 16, 24, 36, 49, 62, 75, 88]
-    elif 0 < total_journals < 50:
-        thresholds = [3.5, 7, 15, 20, 28, 40, 53, 66, 79, 92]
-    else:
-        return 'None', 'None', 'Lỗi số lượng tạp chí'
-
-    rank_h = next((i for i, th in enumerate(thresholds) if percent < th), 10)
-    Top_Percent = '< ' + str(thresholds[rank_h]) if rank_h < len(thresholds) else '>= ' + str(thresholds[-1])
-
-    if (rank_h == 0) and (sjr_quartile == 'Q1'):
-        return 'Ngoại hạng', Top_Percent, ''
-    elif (rank_h == 1) and (sjr_quartile == 'Q1'):
-        return 'Hạng 1', Top_Percent, ''
-    elif (rank_h == 2) and (sjr_quartile in ['Q1', 'Q2']):
-        return 'Hạng 2', Top_Percent, ''
-    elif (rank_h == 3) and (sjr_quartile in ['Q1', 'Q2']):
-        return 'Hạng 3', Top_Percent, ''
-    elif (rank_h == 4) and (sjr_quartile in ['Q1', 'Q2']):
-        return 'Hạng 4', Top_Percent, ''
-    elif (rank_h == 5) and (sjr_quartile in ['Q1', 'Q2', 'Q3']):
-        return 'Hạng 5', Top_Percent, ''
-    elif (rank_h == 6) and (sjr_quartile in ['Q1', 'Q2', 'Q3']):
-        return 'Hạng 6', Top_Percent, ''
-    elif (rank_h == 7) and (sjr_quartile in ['Q1', 'Q2', 'Q3']):
-        return 'Hạng 7', Top_Percent, ''
-    elif (rank_h == 8) and (sjr_quartile in ['Q1', 'Q2', 'Q3']):
-        return 'Hạng 8', Top_Percent, ''
-    elif (rank_h == 9) and (sjr_quartile in ['Q1', 'Q2', 'Q3', 'Q4']):
-        return 'Hạng 9', Top_Percent, ''
-    elif (rank_h == 10) and (sjr_quartile in ['Q1', 'Q2', 'Q3', 'Q4']):
-        return 'Hạng 10', Top_Percent, ''
-    else:
-        return 'Không xếp hạng', Top_Percent, 'Không có Q phù hợp'
+        # Xác định rank_h dựa trên total_journals và Percent
+        if total_journals >= 2000:
+            thresholds = [0.5, 1, 5, 10, 18, 30, 43, 56, 69, 82]
+        elif 1500 <= total_journals <= 1999:
+            thresholds = [0.5, 2, 6, 11, 19, 31, 44, 57, 70, 83]
+        elif 1000 <= total_journals <= 1499:
+            thresholds = [0.5, 3, 7, 12, 20, 32, 45, 58, 71, 84]
+        elif 500 <= total_journals <= 999:
+            thresholds = [0.5, 4, 8, 13, 21, 33, 46, 59, 72, 85]
+        elif 200 <= total_journals <= 499:
+            thresholds = [0.9, 5, 10, 15, 23, 35, 48, 61, 74, 87]
+        elif 50 <= total_journals <= 199:
+            thresholds = [2.5, 6, 11, 16, 24, 36, 49, 62, 75, 88]
+        elif 0 < total_journals < 50:
+            thresholds = [3.5, 7, 15, 20, 28, 40, 53, 66, 79, 92]
+        else:
+            return 'None', 'None', 'Lỗi trong thống kê số lượng tạp chí'
+        rank_h = next((i for i, th in enumerate(thresholds, start=0) if percent < th), 10)
+        if rank_h < len(thresholds):
+            Top_Percent = '< ' + str(thresholds[rank_h])
+        else:
+            Top_Percent = '>= ' + str(thresholds[-1])
+        if (rank_h == 0) and (sjr_quartile == 'Q1'):
+            return 'Ngoại hạng chuyên ngành', Top_Percent, ''
+        elif (rank_h == 1) and  (sjr_quartile == 'Q1'):
+            return 'Hạng 1', Top_Percent, ''
+        elif (rank_h == 2) and  (sjr_quartile == 'Q1' or sjr_quartile == 'Q2'):
+            return 'Hạng 2', Top_Percent, ''
+        elif (rank_h == 3) and  (sjr_quartile == 'Q1' or sjr_quartile == 'Q2'):
+            return 'Hạng 3', Top_Percent, ''
+        elif (rank_h == 4) and  (sjr_quartile == 'Q1' or sjr_quartile == 'Q2'):
+            return 'Hạng 4', Top_Percent, ''
+        elif (rank_h == 5) and  (sjr_quartile == 'Q1' or sjr_quartile == 'Q2' or sjr_quartile == 'Q3'):
+            return 'Hạng 5', Top_Percent, ''
+        elif (rank_h == 6) and  (sjr_quartile == 'Q1' or sjr_quartile == 'Q2' or sjr_quartile == 'Q3'):
+            return 'Hạng 6', Top_Percent, ''
+        elif (rank_h == 7) and  (sjr_quartile == 'Q1' or sjr_quartile == 'Q2' or sjr_quartile == 'Q3'):
+            return 'Hạng 7', Top_Percent, ''
+        elif (rank_h == 8) and  (sjr_quartile == 'Q1' or sjr_quartile == 'Q2' or sjr_quartile == 'Q3'):
+            return 'Hạng 8', Top_Percent, ''
+        elif (rank_h == 9) and  (sjr_quartile == 'Q1' or sjr_quartile == 'Q2' or sjr_quartile == 'Q3' or sjr_quartile == 'Q4'):
+            return 'Hạng 9', Top_Percent, ''
+        elif (rank_h == 10) and (sjr_quartile == 'Q1' or sjr_quartile == 'Q2' or sjr_quartile == 'Q3' or sjr_quartile == 'Q4'):
+            return 'Hạng 10', Top_Percent, ''
+        elif (0 <= rank_h <= 1) and (sjr_quartile == 'Q2'):
+            return f'Hạng 2', Top_Percent, f"Rớt từ Hạng {rank_h} vì Q2"
+        elif (0 <= rank_h <= 4) and (sjr_quartile == 'Q3'):
+            return f'Hạng 5', Top_Percent, f"Rớt từ Hạng {rank_h} vì Q3"
+        elif (0 <= rank_h <= 8) and (sjr_quartile == 'Q4'):
+            return f'Hạng 9', Top_Percent, f"Rớt từ Hạng {rank_h} vì Q4"
+        else:
+            return 'Không xếp hạng', Top_Percent, 'Không có Q'
 
 # ========================
 # Crawler gốc
@@ -176,23 +184,64 @@ def def_rank_by_name_or_issn(year):
     st.subheader(f"Tìm tạp chí theo Tên/ISSN - Năm {year}")
     keyword = st.text_input("Nhập Tên hoặc ISSN")
 
+    # 🔑 Bước 1: Tìm kiếm và lưu
     if st.button("Tìm kiếm"):
         df = find_title_or_issn(keyword)
-        st.session_state['df_search'] = df  # LƯU vào session
-    else:
-        df = st.session_state.get('df_search', pd.DataFrame())
+        st.session_state['df_search'] = df
 
+    df = st.session_state.get('df_search', pd.DataFrame())
     if not df.empty:
-        st.dataframe(df)
-        choose = st.selectbox("Chọn tạp chí", df['Tên tạp chí'])
-        st.session_state['choose_journal'] = choose  # LƯU chọn
+        st.dataframe(df, use_container_width=True, hide_index=True)
 
+        # 🔑 Bước 2: Chọn tạp chí
+        choose = st.selectbox("Chọn tạp chí", df['Tên tạp chí'], key="choose_journal")
+
+        # 🔑 Bước 3: Chỉ cập nhật khi bấm "Xem hạng"
         if st.button("Xem hạng"):
             selected = df[df['Tên tạp chí'] == choose].iloc[0]
             id_scopus = selected['ID Scopus']
-            name_j, country, cats, pub, issn, cover, home, howpub, mail = id_scopus_to_all(id_scopus)
+            issn = selected['ISSN']
+
+            # Crawl chi tiết và bảng rank
+            name_j, country, cats, pub, issn_detail, cover, home, howpub, mail = id_scopus_to_all(id_scopus)
             df_rank = check_rank_by_name_1_journal(name_j, cats, year)
-            st.dataframe(df_rank)
+
+            # Lưu vào session_state
+            st.session_state['df_rank'] = df_rank
+            st.session_state['id_scopus'] = id_scopus
+            st.session_state['issn'] = issn
+
+    # 🔑 Bước 4: LUÔN hiển thị nếu đã có dữ liệu
+    df_rank = st.session_state.get('df_rank', pd.DataFrame())
+    id_scopus = st.session_state.get('id_scopus', None)
+    issn = st.session_state.get('issn', None)
+
+    if not df_rank.empty and id_scopus and issn:
+        st.dataframe(df_rank, use_container_width=True, hide_index=True)
+
+        selected_line = st.selectbox(
+            "Chọn dòng chuyên ngành để mở website",
+            df_rank['STT'].astype(str) + " - " + df_rank['Chuyên ngành'] + " - " + df_rank['Hạng'],
+            key="choose_line_rank"
+        )
+
+        if selected_line:
+            stt_chosen = int(selected_line.split(' - ')[0])
+            row_chosen = df_rank[df_rank['STT'] == stt_chosen].iloc[0]
+
+            open_link_sjr = f"https://www.scimagojr.com/journalrank.php?category={row_chosen['ID Chuyên ngành']}&year={year}&type=j&order=h&ord=desc&page={row_chosen['Trang']}&total_size={row_chosen['Tổng số tạp chí']}"
+            open_link_scopus = f"https://www.scopus.com/sourceid/{id_scopus}"
+            open_link_wos = f"https://mjl.clarivate.com:/search-results?issn={issn}&hide_exact_match_fl=true"
+
+            #col1, col2, col3 = st.columns(3)
+            #with col1:
+            st.markdown(f"[🌐 Mở website SJR của tạp chí '{row_chosen['Tên tạp chí']}', chuyên ngành là '{row_chosen['Chuyên ngành']}']({open_link_sjr})")
+            #with col2:
+            st.markdown(f"[🌐 Mở website Scopus của tạp chí '{row_chosen['Tên tạp chí']}', ISSN là '{issn}']({open_link_scopus})")
+            #with col3:
+            #st.markdown(f"[🌐 Mở Website MJL-WoS của tạp chí '{row_chosen['Tên tạp chí']}', ISSN là '{issn}']({open_link_wos})")
+            st.markdown(f"[🌐 Mở Website MJL-WoS của tạp chí '{row_chosen['Tên tạp chí']}', ISSN: '{issn}'](<{open_link_wos}>)")
+
 
 
 def def_list_all_subject(year):
@@ -201,10 +250,26 @@ def def_list_all_subject(year):
     r = requests.get(url)
     soup = BeautifulSoup(r.content, 'html.parser')
     areas = soup.find_all('div', class_='area')
+
+    rows = []
     for a in areas:
-        st.write(f"📌 {a.find('h4').text.strip()}")
+        area_name = a.find('h4').text.strip()
         for cat in a.find_all('a'):
-            st.write(f"- {cat.text.strip()}")
+            cat_name = cat.text.strip()
+            cat_link = f"https://www.scimagojr.com/{cat['href']}"
+            rows.append([area_name, cat_name, cat_link])
+
+    if rows:
+        df = pd.DataFrame(rows, columns=['Lĩnh vực', 'Chuyên ngành', 'Link'])
+        st.dataframe(df)
+        st.download_button(
+            "📥 Tải danh sách chuyên ngành",
+            df.to_csv(index=False).encode('utf-8'),
+            file_name=f"subject_list_{year}.csv",
+            mime='text/csv'
+        )
+    else:
+        st.warning("Không tìm thấy dữ liệu.")
 
 def def_check_in_scopus_sjr_wos(year):
     st.subheader(f"Kiểm tra tạp chí trong Scopus/SJR/WoS - Năm {year}")
@@ -212,14 +277,13 @@ def def_check_in_scopus_sjr_wos(year):
     if st.button("Kiểm tra"):
         url = f"https://www.scimagojr.com/journalsearch.php?q={query}"
         r = requests.get(url)
+        r.encoding = 'utf-8'
         soup = BeautifulSoup(r.content, 'html.parser')
 
-        # Lấy tên chính xác
         title = soup.find('h1').text.strip() if soup.find('h1') else None
 
         if title:
             st.success(f"✅ Tìm thấy: **{title}**")
-            # Lấy ISSN, Publisher, Coverage
             issn = soup.find('h2', string='ISSN')
             issn = issn.find_next('p').text.strip() if issn else 'N/A'
             pub = soup.find('h2', string='Publisher')
@@ -231,7 +295,6 @@ def def_check_in_scopus_sjr_wos(year):
             st.write(f"- **Publisher**: {pub}")
             st.write(f"- **Coverage**: {coverage}")
 
-            # Link trực tiếp
             st.markdown(f"[🔗 Xem chi tiết trên SJR](https://www.scimagojr.com/journalsearch.php?q={query})")
         else:
             st.warning(f"❌ Không tìm thấy **{query}** trong Scopus/SJR/WoS.")
@@ -245,12 +308,14 @@ def def_rank_by_rank_key(year):
         soup = BeautifulSoup(r.content, 'html.parser')
 
         rows = []
-        for row in soup.find_all('tr', class_='grp'):
-            link = row.find('a')
-            name = link.text.strip()
+        for row in soup.find_all('tr'):
             cells = row.find_all('td')
-            q_value = cells[-1].text.strip() if len(cells) >= 1 else 'N/A'
-            rows.append([name, q_value])
+            if len(cells) >= 5:
+                link = row.find('a')
+                if link:
+                    name = link.text.strip()
+                    q_value = cells[-1].text.strip()
+                    rows.append([name, q_value])
 
         if rows:
             df = pd.DataFrame(rows, columns=['Tên tạp chí', 'Q'])
@@ -275,13 +340,15 @@ def def_rank_by_Q_key(year):
         soup = BeautifulSoup(r.content, 'html.parser')
 
         rows = []
-        for row in soup.find_all('tr', class_='grp'):
-            link = row.find('a')
-            name = link.text.strip()
+        for row in soup.find_all('tr'):
             cells = row.find_all('td')
-            q_value = cells[-1].text.strip() if len(cells) >= 1 else 'N/A'
-            if quartile in q_value:
-                rows.append([name, q_value])
+            if len(cells) >= 5:
+                link = row.find('a')
+                if link:
+                    name = link.text.strip()
+                    q_value = cells[-1].text.strip()
+                    if quartile in q_value:
+                        rows.append([name, q_value])
 
         if rows:
             df = pd.DataFrame(rows, columns=['Tên tạp chí', 'Q'])
