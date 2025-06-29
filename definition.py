@@ -186,30 +186,50 @@ def def_rank_by_name_or_issn(year):
 
     if st.button("Tìm kiếm"):
         df = find_title_or_issn(keyword)
-        st.session_state['df_search'] = df  # LƯU vào session
+        st.session_state['df_search'] = df  # Lưu
     else:
         df = st.session_state.get('df_search', pd.DataFrame())
 
     if not df.empty:
         st.dataframe(df)
         choose = st.selectbox("Chọn tạp chí", df['Tên tạp chí'])
-        st.session_state['choose_journal'] = choose  # LƯU chọn
+        st.session_state['choose_journal'] = choose
+
         if st.button("Xem hạng"):
             selected = df[df['Tên tạp chí'] == choose].iloc[0]
             id_scopus = selected['ID Scopus']
             name_j, country, cats, pub, issn, cover, home, howpub, mail = id_scopus_to_all(id_scopus)
             df_rank = check_rank_by_name_1_journal(name_j, cats, year)
-            st.dataframe(df_rank)
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            if st.button("Mở SJR"):
-                st.write(f"[Click để xem SJR]({open_link_sjr})")
-        with col2:
-            if st.button("Mở Scopus"):
-                st.write(f"[Click để xem Scopus]({open_link_scopus})")
-        with col3:
-            if st.button("Mở WoS"):
-                st.write(f"[Click để xem WoS]({open_link_wos})")
+            st.session_state['df_rank'] = df_rank  # Lưu bảng rank
+            st.dataframe(df_rank, use_container_width=True)
+
+    df_rank = st.session_state.get('df_rank', pd.DataFrame())
+
+    if not df_rank.empty:
+        # Chọn dòng trong bảng rank
+        selected_line = st.selectbox(
+            "Chọn dòng chuyên ngành để lấy link",
+            df_rank['STT'].astype(str) + " - " + df_rank['Chuyên ngành']
+        )
+
+        if selected_line:
+            # Tách số thứ tự
+            stt_chosen = int(selected_line.split(' - ')[0])
+            row_chosen = df_rank[df_rank['STT'] == stt_chosen].iloc[0]
+
+            # Tạo link
+            open_link_sjr = f"https://www.scimagojr.com/journalrank.php?category={row_chosen['ID Chuyên ngành']}&year={year}&type=j&order=h&ord=desc&page={row_chosen['Trang']}&total_size={row_chosen['Tổng số tạp chí']}"
+            open_link_scopus = f"https://www.scopus.com/sourceid/{row_chosen['ID Scopus']}"
+            open_link_wos = f"https://mjl.clarivate.com:/search-results?issn={row_chosen['ISSN']}&hide_exact_match_fl=true"
+
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                st.markdown(f"[🔗 Mở SJR]({open_link_sjr})")
+            with col2:
+                st.markdown(f"[🔗 Mở Scopus]({open_link_scopus})")
+            with col3:
+                st.markdown(f"[🔗 Mở WoS]({open_link_wos})")
+
 
 def def_list_all_subject(year):
     st.subheader(f"Danh sách chuyên ngành - Năm {year}")
