@@ -191,7 +191,7 @@ def def_rank_by_name_or_issn(year):
 
     df = st.session_state.get('df_search', pd.DataFrame())
     if not df.empty:
-        st.dataframe(df, use_container_width=True)
+        st.dataframe(df, use_container_width=True, hide_index=True)
 
         # 🔑 Bước 2: Chọn tạp chí
         choose = st.selectbox("Chọn tạp chí", df['Tên tạp chí'], key="choose_journal")
@@ -217,7 +217,7 @@ def def_rank_by_name_or_issn(year):
     issn = st.session_state.get('issn', None)
 
     if not df_rank.empty and id_scopus and issn:
-        st.dataframe(df_rank, use_container_width=True)
+        st.dataframe(df_rank, use_container_width=True, hide_index=True)
 
         selected_line = st.selectbox(
             "Chọn dòng chuyên ngành để mở website",
