@@ -188,59 +188,58 @@ def def_rank_by_name_or_issn(year):
     if st.button("Tìm kiếm"):
         df = find_title_or_issn(keyword)
         st.session_state['df_search'] = df  # Lưu kết quả tìm kiếm
-    else:
-        df = st.session_state.get('df_search', pd.DataFrame())
+
+    df = st.session_state.get('df_search', pd.DataFrame())
 
     if not df.empty:
         st.dataframe(df, use_container_width=True)
 
-        # Bước 2: Chọn tạp chí trong danh sách tìm được
+        # Bước 2: Chọn tạp chí
         choose = st.selectbox("Chọn tạp chí", df['Tên tạp chí'])
         st.session_state['choose_journal'] = choose
 
-        # Bước 3: Xem hạng
+        # Bước 3: Nếu bấm Xem hạng thì LƯU bảng rank vào session
         if st.button("Xem hạng"):
             selected = df[df['Tên tạp chí'] == choose].iloc[0]
             id_scopus = selected['ID Scopus']
             issn = selected['ISSN']
 
-            # Gọi hàm lấy chi tiết + bảng rank
             name_j, country, cats, pub, issn_detail, cover, home, howpub, mail = id_scopus_to_all(id_scopus)
             df_rank = check_rank_by_name_1_journal(name_j, cats, year)
 
-            # Lưu các giá trị cần dùng lại
             st.session_state['df_rank'] = df_rank
             st.session_state['id_scopus'] = id_scopus
             st.session_state['issn'] = issn
 
-            st.dataframe(df_rank, use_container_width=True)
+    # ✅ Bước 4: LUÔN hiển thị bảng rank nếu có
+    df_rank = st.session_state.get('df_rank', pd.DataFrame())
+    id_scopus = st.session_state.get('id_scopus', None)
+    issn = st.session_state.get('issn', None)
 
-    # Bước 4: Chọn dòng chuyên ngành để tạo link
-            df_rank = st.session_state.get('df_rank', pd.DataFrame())
-            id_scopus = st.session_state.get('id_scopus', None)
-            issn = st.session_state.get('issn', None)
-            
-            if not df_rank.empty and id_scopus and issn:
-                selected_line = st.selectbox(
-                    "Chọn dòng chuyên ngành để mở website",
-                    df_rank['STT'].astype(str) + " - " + df_rank['Chuyên ngành']
-                )
-            
-                if selected_line:
-                    stt_chosen = int(selected_line.split(' - ')[0])
-                    row_chosen = df_rank[df_rank['STT'] == stt_chosen].iloc[0]
-            
-                    open_link_sjr = f"https://www.scimagojr.com/journalrank.php?category={row_chosen['ID Chuyên ngành']}&year={year}&type=j&order=h&ord=desc&page={row_chosen['Trang']}&total_size={row_chosen['Tổng số tạp chí']}"
-                    open_link_scopus = f"https://www.scopus.com/sourceid/{id_scopus}"
-                    open_link_wos = f"https://mjl.clarivate.com:/search-results?issn={issn}&hide_exact_match_fl=true"
-            
-                    col1, col2, col3 = st.columns(3)
-                    with col1:
-                        st.markdown(f"[🌐 Mở SJR]({open_link_sjr})")
-                    with col2:
-                        st.markdown(f"[🌐 Mở Scopus]({open_link_scopus})")
-                    with col3:
-                        st.markdown(f"[🌐 Mở WoS]({open_link_wos})")
+    if not df_rank.empty:
+        st.dataframe(df_rank, use_container_width=True)
+
+        selected_line = st.selectbox(
+            "Chọn dòng chuyên ngành để mở website",
+            df_rank['STT'].astype(str) + " - " + df_rank['Chuyên ngành']
+        )
+
+        if selected_line and id_scopus and issn:
+            stt_chosen = int(selected_line.split(' - ')[0])
+            row_chosen = df_rank[df_rank['STT'] == stt_chosen].iloc[0]
+
+            open_link_sjr = f"https://www.scimagojr.com/journalrank.php?category={row_chosen['ID Chuyên ngành']}&year={year}&type=j&order=h&ord=desc&page={row_chosen['Trang']}&total_size={row_chosen['Tổng số tạp chí']}"
+            open_link_scopus = f"https://www.scopus.com/sourceid/{id_scopus}"
+            open_link_wos = f"https://mjl.clarivate.com:/search-results?issn={issn}&hide_exact_match_fl=true"
+
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                st.markdown(f"[🌐 Mở SJR]({open_link_sjr})")
+            with col2:
+                st.markdown(f"[🌐 Mở Scopus]({open_link_scopus})")
+            with col3:
+                st.markdown(f"[🌐 Mở WoS]({open_link_wos})")
+
 
 
 
